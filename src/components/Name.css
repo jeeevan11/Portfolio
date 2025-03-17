@@ -1,0 +1,12 @@
+#nav{
+    display: grid;
+    top:2px;
+    left:5px;
+    z-index: 3;
+    position: fixed;
+    background-color:transparent;
+}
+
+.navText,s,#nav{
+    background-color: transparent;
+}

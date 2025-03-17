@@ -1,0 +1,22 @@
+#footerDiv{
+    width: 100vw;
+    height:100vh;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    z-index:4;
+    overflow-y: hidden;
+}
+
+#footer{
+    position:absolute;
+    bottom:0;
+    font-size:1100px;
+    margin-bottom: -180px;
+    background-color: transparent;
+}
+
+#hire{
+    position: absolute;
+    top: 0;
+}
