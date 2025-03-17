@@ -1,0 +1,21 @@
+#projectRefs{
+    margin-top: 200px;
+}
+
+#projectRefs a{
+    text-decoration: none;
+}
+
+#projectRefs a:hover{
+    text-decoration: underline;
+}
+
+.sup{
+    font-size: 20px;
+    visibility: hidden;
+}
+
+#projectRefs a:hover +  .sup {
+    visibility: visible;
+}
+
