@@ -1,0 +1,13 @@
+#details {
+    cursor: default;
+    line-height: 1;
+}
+
+#details p {
+    line-height: 1;
+    transition: color 0.4s cubic-bezier(0.25, 0, 0, 1);
+}
+
+body.navDetailsHover #details p {
+    color: #FFA6E6;
+}

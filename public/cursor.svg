@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="-1 -1 14 18" shape-rendering="crispEdges">
+  <polygon
+    points="0,0 0,13 4,9 7,17 9,16 6,8 11,8"
+    fill="#F1ECDE"
+    stroke="#171614"
+    stroke-width="1.4"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+</svg>
