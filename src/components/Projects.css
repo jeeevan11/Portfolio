@@ -1,21 +1,98 @@
 #projectRefs{
-    margin-top: 200px;
+    margin-top: clamp(100px, 16vw, 240px);
+}
+
+.projectPara{
+    line-height: 1.12;
+    white-space: nowrap;
+    position: relative;
 }
 
 #projectRefs a{
+    position: relative;
+    display: inline-block;
     text-decoration: none;
+    transition: color 0.7s cubic-bezier(0.25, 0, 0, 1);
+}
+
+#projectRefs a::after{
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0em;
+    width: 100%;
+    height: 0.06em;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.75s cubic-bezier(0.25, 0, 0, 1);
 }
 
 #projectRefs a:hover{
-    text-decoration: underline;
+    color: #ECFFA7;
+}
+
+#projectRefs a.featuredLink {
+    color: #FFA6E6;
+}
+
+#projectRefs a.featuredLink:hover {
+    color: #ECFFA7;
+}
+
+#projectRefs a:hover::after{
+    transform: scaleX(1);
+    transform-origin: left center;
 }
 
 .sup{
-    font-size: 20px;
+    font-size: clamp(12px, 1.2vw, 18px);
     visibility: hidden;
+    letter-spacing: 0;
 }
 
-#projectRefs a:hover +  .sup {
+#projectRefs a:hover + .sup{
     visibility: visible;
 }
 
+/* Tags float ABOVE the project name (in the empty space above) — always visible, never clipped */
+.projTags {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 0.45em;
+    font-size: clamp(11px, 1vw, 15px);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ECFFA7;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s cubic-bezier(0.25, 0, 0, 1),
+                transform 0.5s cubic-bezier(0.25, 0, 0, 1);
+    pointer-events: none;
+}
+
+#projectRefs a:hover .projTags {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    #projectRefs {
+        margin-bottom: clamp(60px, 12vw, 100px);
+    }
+
+    .projectPara {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: baseline;
+    }
+
+    .projectPara .sup {
+        order: -1;
+        margin-right: 0.4em;
+    }
+}

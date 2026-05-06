@@ -1,39 +1,42 @@
-@font-face {
-  font-family: "HeyGotchaRegular";
-  src: local("HeyGotchaRegular"),
-    url("./assets/fonts/Hey Gotcha Regular.otf") format("opentype");
-  font-weight: normal;
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: #0E0A1C;
 }
 
 *{
-  margin:0px;
-  padding-bottom: 0px;
-  padding-right: 0;
-  /* color: #FBDFB6;
-  background-color: #170D0C; */
-  font-family: "HeyGotchaRegular";
-  font-size: 80px;
-  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: "Kumbh Sans", sans-serif;
+  font-weight: 700;
+  font-size: clamp(30px, 6vw, 92px);
+  letter-spacing: -0.03em;
+  box-sizing: border-box;
 }
 
 .light{
-  color: #FBDFB6;
-  background-color: #170D0C;
+  color: #171614;
+  background-color: #F1ECDE;
 }
 
 .light a{
-  color: #FBDFB6;
+  color: #171614;
 }
 
 .dark{
-  color:#170D0C;
-  background-color: #FBDFB6;
+  color: #F1ECDE;
+  background-color: #0E0A1C;
 }
 
 .dark a{
-  color:#170D0C;
+  color: #F1ECDE;
 }
 
 ::-webkit-scrollbar{
   width: 0;
+}
+
+html, body, * {
+  cursor: url('/cursor.svg') 2 2, auto;
 }

@@ -1,12 +1,51 @@
-#nav{
-    display: grid;
-    top:2px;
-    left:5px;
-    z-index: 3;
+#loader {
     position: fixed;
-    background-color:transparent;
+    z-index: 100;
+    top: 50%;
+    background-color: transparent;
+    white-space: nowrap;
+    opacity: 0;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: inherit;
+    transition: color 0.4s cubic-bezier(0.25, 0, 0, 1);
 }
 
-.navText,s,#nav{
-    background-color: transparent;
+body.navDetailsHover #loader {
+    color: #FFA6E6;
 }
+
+#loader > span {
+    display: inline-block;
+    vertical-align: top;
+    font-size: inherit;
+}
+
+.loaderFill {
+    overflow: hidden;
+    width: 0;
+}
+
+/* ── Per-letter rolling structure (used after intro animation) ── */
+
+.navLetterWrap {
+    display: inline-block;
+    overflow: hidden;
+    height: 1em;
+    line-height: 1;
+    vertical-align: top;
+}
+
+.navLetterRoll {
+    display: block;
+    will-change: transform;
+    font-size: inherit;
+}
+
+.navLetterRoll > span {
+    display: block;
+    line-height: 1;
+    font-size: inherit;
+}
+
+/* Second copy inherits same color as first — no extra flash */

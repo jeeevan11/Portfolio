@@ -1,22 +1,174 @@
 #footerDiv{
     width: 100vw;
-    height:100vh;
+    height: 100vh;
     position: relative;
+    overflow: hidden;
+    padding: clamp(48px, 6vw, 80px) 0 0 0;
+    background: #0E0A1C;
+    color: #F1ECDE;
+}
+
+
+/* ── Top bar: mark + back-to-top ─────────────────────────────────── */
+
+#footerTopBar{
     display: flex;
-    justify-content: center;
-    z-index:4;
-    overflow-y: hidden;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-left: clamp(32px, 3vw, 56px);
+    margin-right: clamp(32px, 3vw, 56px);
+    margin-bottom: 24px;
 }
 
-#footer{
-    position:absolute;
-    bottom:0;
-    font-size:1100px;
-    margin-bottom: -180px;
-    background-color: transparent;
+#footerMark{
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0;
+    color: inherit;
 }
 
-#hire{
+.footerBackTop{
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 0;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    transition: color 0.5s cubic-bezier(0.25, 0, 0, 1);
+}
+
+.footerBackTop *,
+.letterWrapper,
+.letterStack,
+.letterStack > span{
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+}
+
+.letterWrapper{
+    display: inline-block;
+    overflow: hidden;
+    height: 1em;
+    line-height: 1;
+    vertical-align: top;
+    white-space: pre;
+}
+
+.letterStack{
+    display: block;
+    transform: translateY(-1em);
+    transition: transform 0.65s cubic-bezier(0.25, 0, 0, 1);
+    transition-delay: var(--delay, 0s);
+}
+
+.letterStack > span{
+    display: block;
+    line-height: 1;
+}
+
+.footerBackTop:hover{
+    color: #F5A218;
+}
+
+.footerBackTop:hover .letterStack{
+    transform: translateY(0);
+}
+
+/* ── Divider line ────────────────────────────────────────────────── */
+
+#footerLine{
+    height: 1px;
+    background-color: currentColor;
+    opacity: 0.3;
+    margin-left: clamp(32px, 3vw, 56px);
+    margin-right: clamp(32px, 3vw, 56px);
+    transform: scaleX(0);
+    transform-origin: left center;
+}
+
+/* ── Name + arrow ────────────────────────────────────────────────── */
+
+#footerYear{
     position: absolute;
-    top: 0;
+    bottom: -0.06em;
+    left: 0;
+    width: 100%;
+    padding: 0 clamp(20px, 2.5vw, 44px);
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    opacity: 0;
+    box-sizing: border-box;
+}
+
+#footerYearText{
+    font-size: clamp(44px, 7.5vw, 116px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    color: #F1ECDE;
+}
+
+#footerYearText span{
+    display: block;
+}
+
+#footerAttrib{
+    font-size: clamp(12px, 1.4vw, 20px) !important;
+    letter-spacing: 0.04em !important;
+    opacity: 0.5;
+    margin-top: 0.6em;
+    font-weight: 500;
+}
+
+#footerArrow{
+    font-size: clamp(80px, 16vw, 250px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: #F5A218;
+    text-decoration: none;
+    flex-shrink: 0;
+    padding-bottom: 0.04em;
+    transition: color 0.55s cubic-bezier(0.25, 0, 0, 1),
+                transform 0.6s cubic-bezier(0.25, 0, 0, 1);
+    display: inline-block;
+}
+
+#footerArrow:hover{
+    color: #F5D0A0;
+    transform: translateX(0.08em);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+    #footerYearText,
+    #footerArrow {
+        font-size: clamp(60px, 13vw, 180px);
+    }
+}
+
+@media (max-width: 768px) {
+    #footerDiv {
+        height: 60vh;
+        padding: clamp(32px, 5vw, 56px) 0 0 0;
+    }
+
+    #footerLine, #footerTopBar {
+        display: none;
+    }
+
+    #footerYearText,
+    #footerArrow {
+        font-size: clamp(52px, 16vw, 130px);
+    }
 }
