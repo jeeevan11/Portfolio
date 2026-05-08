@@ -58,9 +58,48 @@
   <body>
     <div id="root"></div>
     <noscript>
-      <p style="font-family: system-ui, sans-serif; padding: 24px; color: #F0E7C2;">
-        This site uses JavaScript for animations. Please enable JavaScript to view the portfolio.
-      </p>
+      <style>
+        .ns-wrap { font-family: system-ui, -apple-system, sans-serif; color: #F0E7C2; background: #00291C; min-height: 100vh; padding: 32px 24px 64px; max-width: 720px; margin: 0 auto; line-height: 1.55; }
+        .ns-wrap h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; }
+        .ns-wrap h2 { font-size: 18px; font-weight: 600; margin: 32px 0 12px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.08em; }
+        .ns-wrap p { margin: 0 0 12px; }
+        .ns-wrap a { color: #F0E7C2; text-decoration: underline; text-underline-offset: 3px; }
+        .ns-wrap a.feat { color: #954130; font-weight: 600; }
+        .ns-wrap ul { list-style: none; padding: 0; margin: 0; }
+        .ns-wrap li { margin: 6px 0; }
+        .ns-wrap .yr { opacity: 0.55; font-size: 0.85em; margin-left: 6px; }
+        .ns-wrap .tags { display: block; opacity: 0.65; font-size: 0.85em; margin-top: 2px; }
+        .ns-wrap .note { margin-top: 40px; opacity: 0.55; font-size: 14px; }
+      </style>
+      <main class="ns-wrap">
+        <h1>Jatin Chhanwal</h1>
+        <p>Independent Creative Developer.</p>
+
+        <h2>Selected Projects</h2>
+        <ul>
+          <li><a class="feat" href="https://socialgravity.ai/" rel="noopener">Social Gravity AI</a><span class="yr">(2026)</span><span class="tags">Founding Member · Paying users · Raising</span></li>
+          <li><a href="https://nile-theta.vercel.app" rel="noopener">Nile</a><span class="yr">(2026)</span></li>
+          <li><a href="https://persona-ai-zeta.vercel.app/" rel="noopener">PersonaAI</a><span class="yr">(2026)</span></li>
+          <li><a href="https://legal-sarthi.vercel.app/" rel="noopener">LegalSarthi</a><span class="yr">(2026)</span></li>
+          <li><a href="https://newgenius-frontend.vercel.app/" rel="noopener">NewsGenius</a><span class="yr">(2025)</span></li>
+          <li><a href="https://boisterous-mermaid-5baa81.netlify.app/" rel="noopener">Spotify Clone</a><span class="yr">(2025)</span></li>
+          <li><a href="https://pirobeastie.github.io/Planet-Distance/" rel="noopener">Planet Distance</a><span class="yr">(2024)</span></li>
+          <li><a href="https://pirobeastie.github.io/Book_Recommendation/" rel="noopener">Book Store</a><span class="yr">(2024)</span></li>
+          <li><a href="https://retro-theme-css.vercel.app/" rel="noopener">Retro CSS</a><span class="yr">(2024)</span></li>
+        </ul>
+
+        <h2>Connect</h2>
+        <ul>
+          <li><a href="mailto:connectwithjatin365@gmail.com">connectwithjatin365@gmail.com</a></li>
+          <li><a href="https://www.linkedin.com/in/jatin-chhanwal-a241a2289" rel="noopener">LinkedIn</a></li>
+          <li><a href="https://github.com/jeeevan11" rel="noopener">GitHub</a></li>
+          <li><a href="https://www.instagram.com/jeeevan11/" rel="noopener">Instagram</a></li>
+          <li><a href="https://x.com/Jeeevannn11" rel="noopener">Twitter / X</a></li>
+          <li><a href="https://codeforces.com/profile/jeeevan11" rel="noopener">Codeforces</a></li>
+        </ul>
+
+        <p class="note">The full interactive portfolio requires JavaScript. This page is the readable fallback.</p>
+      </main>
     </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
