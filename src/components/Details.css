@@ -31,10 +31,34 @@ body.navDetailsHover #details p {
     line-height: inherit;
 }
 
+/* Subtle, gentle underline on "Creative" — invites hover discovery */
+.creativeWord::after {
+    content: '';
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    bottom: -0.02em;
+    height: 0.04em;
+    background: currentColor;
+    opacity: 0.35;
+    transform: scaleX(1);
+    transform-origin: left center;
+    transition: opacity 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+    pointer-events: none;
+}
+
+.creativeWord:hover::after,
+body.showCreativeFill .creativeWord::after {
+    opacity: 0.75;
+    transform: scaleX(1.02);
+}
+
+/* Hover overlay — image stencil fades in. Background-image is set inline
+   via JS (random pick from the creative-fills pool on each hover). */
 .creativeWordFill {
     position: absolute;
     inset: 0;
-    background-image: url('/creative.jpeg');
     background-size: cover;
     background-position: center;
     background-clip: text;
@@ -42,7 +66,7 @@ body.navDetailsHover #details p {
     -webkit-text-fill-color: transparent;
     color: transparent;
     opacity: 0;
-    transition: opacity 0.7s cubic-bezier(0.25, 0, 0, 1);
+    transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
     pointer-events: none;
     user-select: none;
 }

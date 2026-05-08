@@ -414,6 +414,62 @@ body.started #soundToggle {
   }
 }
 
+/* ── Creative press-and-hold photo peek ─────────────────────── */
+#creativePeekBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body.creativePeek #creativePeekBackdrop {
+  opacity: 1;
+}
+
+#creativePeek {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  max-width: min(72vw, 760px);
+  max-height: 78vh;
+  transform: translate(-50%, -50%) scale(0.96);
+  z-index: 230;
+  border-radius: 4px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body.creativePeek #creativePeek {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+body.creativePeek #content,
+body.creativePeek #loader,
+body.creativePeek #soundToggle {
+  filter: blur(10px) brightness(0.4) saturate(0.85);
+  transition: filter 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  #creativePeek {
+    max-width: 88vw;
+    max-height: 70vh;
+  }
+}
+
 /* Quote swap animation — runs on Footer key change */
 #footerYearText {
   animation: quoteSwap 0.55s cubic-bezier(0.25, 0, 0, 1);
