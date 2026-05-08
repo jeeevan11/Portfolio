@@ -54,95 +54,164 @@ function App() {
   const [focusActive, setFocusActive] = useState(false)
   const focusActiveRef = useRef(false)
   const focusOnExitRef = useRef(null)
-  const isMobileMQ = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches
+  const introTimeoutRef = useRef(null)
+  const introVideoStartRef = useRef(null)
+  const cinematicRef = useRef(false)
+  const focusEnteringRef = useRef(false)
+  const focusUnmountTimerRef = useRef(null)
 
-  const enterFocusMode = (onExit) => {
+  const enterFocusMode = (onExit, opts = {}) => {
     if (focusActiveRef.current) return
     focusActiveRef.current = true
     focusOnExitRef.current = onExit || null
     setFocusActive(true)
     document.body.classList.add('focusMode')
 
+    const isCinematic = !!opts.intro
+    cinematicRef.current = isCinematic
+    if (isCinematic) {
+      document.body.classList.add('focusIntro')
+    }
+
     // Pause music while focused video plays
     const audio = ambientAudioRef.current
     if (audio) audio.pause()
 
     const video = ambientVideoRef.current
-    if (video) {
+    if (!video) return
+
+    // Video plays its full duration. No early fade. Hard cut on `ended`.
+    let exitTriggered = false
+    const cleanup = () => {
+      video.removeEventListener('ended', onEnded)
+    }
+    const onEnded = () => {
+      if (exitTriggered) return
+      exitTriggered = true
+      cleanup()
+      exitFocusMode()
+    }
+
+    const playVideoNow = () => {
       video.muted = false
       video.loop = false
       try { video.currentTime = 0 } catch (e) {}
       video.volume = 1.0
       video.play().catch(() => {})
+      video.addEventListener('ended', onEnded)
+    }
 
-      const onEnded = () => {
-        video.removeEventListener('ended', onEnded)
-        exitFocusMode()
-      }
-      video.addEventListener('ended', onEnded, { once: true })
+    if (isCinematic) {
+      // Cinematic timing — butter smooth:
+      //   t=0–1s caption alone (silent, no video at all)
+      //   t=1.0s video.play() → audio begins (visual still hidden)
+      //   t=4.6s body.focusIntro removed → visual reveals at video's t=3.6s
+      //          Caption fade-out completes at the same moment.
+      if (introTimeoutRef.current) clearTimeout(introTimeoutRef.current)
+      if (introVideoStartRef.current) clearTimeout(introVideoStartRef.current)
+      introVideoStartRef.current = setTimeout(() => {
+        playVideoNow()
+        introVideoStartRef.current = null
+      }, 1000)
+      introTimeoutRef.current = setTimeout(() => {
+        document.body.classList.remove('focusIntro')
+        introTimeoutRef.current = null
+      }, 4600)
+    } else {
+      // JC / Creative click — play immediately, no captions
+      playVideoNow()
     }
   }
 
   const exitFocusMode = () => {
     if (!focusActiveRef.current) return
     focusActiveRef.current = false
-    setFocusActive(false)
-    document.body.classList.remove('focusMode')
+    // NOTE: setFocusActive(false) is deferred until after the silence beat
+    // and backdrop fade-out — keeps the backdrop in the DOM throughout.
+    const wasCinematic = cinematicRef.current
+    cinematicRef.current = false
+    document.body.classList.remove('focusIntro')
+    document.body.classList.remove('focusEntering')
+    document.body.classList.remove('showCreativeFill')
+    if (introTimeoutRef.current) {
+      clearTimeout(introTimeoutRef.current)
+      introTimeoutRef.current = null
+    }
+    if (introVideoStartRef.current) {
+      clearTimeout(introVideoStartRef.current)
+      introVideoStartRef.current = null
+    }
 
+    // HARD CUT: video pauses + reset. focusEnding triggers black backdrop.
     const video = ambientVideoRef.current
     if (video) {
+      gsap.killTweensOf(video)
+      video.pause()
       video.muted = true
       video.loop = true
       try { video.currentTime = 0 } catch (e) {}
-      // Desktop: keep ambient corner loop alive. Mobile: stay paused.
-      if (!isMobileMQ()) {
-        video.play().catch(() => {})
-      } else {
-        video.pause()
-      }
     }
+    document.body.classList.add('focusEnding')
 
-    // Resume music if user has it on AND intro has already begun
+    // Audio resumes silently — toggle stays on, scroll governs volume
     const audio = ambientAudioRef.current
     if (audio && soundOnRef.current && document.body.classList.contains('started')) {
+      if (wasCinematic) audio.volume = 0
       audio.play().catch(() => {})
     }
 
-    if (focusOnExitRef.current) {
-      const cb = focusOnExitRef.current
-      focusOnExitRef.current = null
-      cb()
-    }
+    if (focusUnmountTimerRef.current) clearTimeout(focusUnmountTimerRef.current)
+
+    // Silence beat: 1.6s of pure black, then site flow returns
+    setTimeout(() => {
+      document.body.classList.remove('focusMode')
+      document.body.classList.remove('focusEnding')
+      // Backdrop now fades out (1.0s CSS transition)
+      if (focusOnExitRef.current) {
+        const cb = focusOnExitRef.current
+        focusOnExitRef.current = null
+        cb()
+      }
+      // Wait for backdrop fade to complete before unmounting from DOM
+      focusUnmountTimerRef.current = setTimeout(() => {
+        setFocusActive(false)
+        focusUnmountTimerRef.current = null
+      }, 1100)
+    }, 1600)
   }
 
-  const handleNameClick = () => {
-    if (!startedRef.current) return
-    enterFocusMode()
+  const triggerFocusFromClick = () => {
+    if (!startedRef.current || focusActiveRef.current || focusEnteringRef.current) return
+    focusEnteringRef.current = true
+    // Phase 1: highlight the floral stencil + lightly blur the world
+    document.body.classList.add('showCreativeFill')
+    document.body.classList.add('focusEntering')
+    // Phase 2 (300ms later): full blur + video reveal
+    setTimeout(() => {
+      focusEnteringRef.current = false
+      document.body.classList.remove('focusEntering')
+      enterFocusMode()
+    }, 300)
   }
+  const handleNameClick = triggerFocusFromClick
   const handleCreativeClick = (e) => {
-    if (!startedRef.current) return
     if (e && e.stopPropagation) e.stopPropagation()
-    enterFocusMode()
+    triggerFocusFromClick()
   }
 
   const handleStart = () => {
     if (startedRef.current) return
     startedRef.current = true
     setClosing(true)
-    // Enter focus-mode video FIRST. The intro animation + music start AFTER
-    // the focus video ends (or user clicks to skip).
+    // Cinematic intro: 3-second subtitle hold, then video reveal.
+    // Intro animation + music start AFTER video ends (or user skips).
     enterFocusMode(() => {
-      // Re-trigger audio inside this user-gesture-derived chain
-      const audio = ambientAudioRef.current
-      if (audio && soundOnRef.current) {
-        const isTouch = window.matchMedia('(hover: none)').matches
-        audio.volume = isTouch ? 0.32 : 0
-        audio.play().catch(() => {})
-      }
+      // Music is paused while focus is active; startSequenceRef will
+      // re-enable it. Scroll-based lerp will pick the right volume from there.
       if (startSequenceRef.current) {
         startSequenceRef.current()
       }
-    })
+    }, { intro: true })
     setTimeout(() => setHasStarted(true), 600)
   }
 
@@ -175,14 +244,12 @@ function App() {
     }
   }, [soundOn])
 
-  // Pause the ambient video on mobile by default — it should only play
-  // during focus mode. Desktop autoplays as the corner ambient loop.
+  // Pause the ambient video on mount — it should only play during focus mode now.
   useEffect(() => {
     const video = ambientVideoRef.current
     if (!video) return
-    if (isMobileMQ()) {
-      video.pause()
-    }
+    video.pause()
+    video.muted = true
   }, [])
 
   // Create the ambient audio element immediately on mount (not waiting for fonts).
@@ -238,44 +305,37 @@ function App() {
       const cleanupClicks = initMechanicalClicks(lenis)
 
       // ── Ambient music ───────────────────────────────────────────────
-      // Audio element is created in a separate useEffect (immediately on mount)
-      // so it's ready when the user clicks the start screen. This block just
-      // wires the volume control loop and proximity tracking.
-      const isTouch = window.matchMedia('(hover: none)').matches
-      const MOBILE_VOL = 0.32
-      const MAX_VOL = 0.42
-      const MAX_DIST = 380
+      // Subtle. Music fades in gently as the user reaches the page-bottom,
+      // and fades back out as they scroll back up.
+      //   • Silent above the fade range
+      //   • Within last ~70% viewport-height of scroll: smooth ramp up
+      //   • At bottom: holds at a quiet ceiling
+      const BASE_VOL = 0.18         // ceiling — never full, kept restrained
+      const FADE_RANGE_MULT = 0.7   // viewport-fraction over which the ramp happens
 
-      let targetVol = isTouch ? MOBILE_VOL : 0
+      let targetVol = 0
       let currentVol = 0
 
-      const onMouseMove = (e) => {
-        const photoEl = document.getElementById('profilePhoto')
-        if (!photoEl) { targetVol = 0; return }
-        const rect = photoEl.getBoundingClientRect()
-        if (rect.width === 0) { targetVol = 0; return }
-        const cx = rect.left + rect.width / 2
-        const cy = rect.top + rect.height / 2
-        const dx = e.clientX - cx
-        const dy = e.clientY - cy
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        let t = 1 - dist / MAX_DIST
-        if (t < 0) t = 0
-        if (t > 1) t = 1
-        t = t * t * (3 - 2 * t)  // smoothstep falloff
-        targetVol = t * MAX_VOL
-      }
-      if (!isTouch) {
-        window.addEventListener('mousemove', onMouseMove, { passive: true })
+      const computeTargetVol = () => {
+        if (!lenis) return 0
+        const limit = lenis.limit || 0
+        if (limit <= 0) return 0
+        const distFromBottom = Math.max(0, limit - lenis.scroll)
+        const fadeRange = window.innerHeight * FADE_RANGE_MULT
+        if (distFromBottom <= 0) return BASE_VOL
+        if (distFromBottom >= fadeRange) return 0
+        const t = 1 - (distFromBottom / fadeRange)
+        return t * t * (3 - 2 * t) * BASE_VOL
       }
 
-      // Volume lerp loop — buttery transitions; respects sound toggle
+      // Volume lerp loop — slow ramp for subtle, restrained feel
       let audioRafId = null
       const tickAudio = () => {
+        targetVol = computeTargetVol()
         const audio = ambientAudioRef.current
         if (audio) {
           const effectiveTarget = soundOnRef.current ? targetVol : 0
-          currentVol += (effectiveTarget - currentVol) * 0.08
+          currentVol += (effectiveTarget - currentVol) * 0.04
           if (currentVol < 0.0008) currentVol = 0
           audio.volume = Math.max(0, Math.min(1, currentVol))
         }
@@ -293,12 +353,12 @@ function App() {
         started = true
         document.body.classList.add('started')
         tl.play()
-        // Sync currentVol so the lerp loop produces audible output immediately
+        // Music does NOT auto-start after the cinematic intro.
+        // It only plays when soundOnRef is true AND user is overscrolling at bottom.
         const audio = ambientAudioRef.current
         if (audio && soundOnRef.current) {
-          currentVol = isTouch ? MOBILE_VOL : 0
-          audio.volume = currentVol
-          // Re-attempt play in case handleStart's call was blocked
+          currentVol = 0
+          audio.volume = 0
           audio.play().catch(() => {})
         }
       }
@@ -459,38 +519,38 @@ function App() {
       // ── Master timeline (paused — runs after first user click) ────
       const tl = gsap.timeline({ paused: true })
 
-      // 1. Breathe in — slow, deliberate fade
-      tl.to(loader, { opacity: 1, duration: 2.0, ease: 'power3.out', delay: 0.3 })
+      // 1. JC dissolves in slowly after the silence beat (smooth, cinematic)
+      tl.to(loader, { opacity: 1, duration: 2.4, ease: 'power3.out', delay: 0.4 })
 
       // 2. Name expands
       tl.to(
         [fillAnak, fillHahal],
         {
           width: (i) => [targetFillAnak, targetFillHahal][i] + 'px',
-          duration: 2.2,
+          duration: 3.0,
           ease: 'expo.inOut',
-          delay: 1.0,
+          delay: 1.4,
         }
       )
       tl.to(
         loader,
-        { left: phase2EndLeft + 'px', duration: 2.2, ease: 'expo.inOut' },
+        { left: phase2EndLeft + 'px', duration: 3.0, ease: 'expo.inOut' },
         '<'
       )
 
       // 3. Hold then exhale: shrink to nav corner
       tl.to(loaderEls, {
         fontSize: finalLoaderSize + 'px',
-        duration: 2.6,
+        duration: 3.4,
         ease: 'expo.inOut',
-        delay: 1.5,
+        delay: 2.0,
       })
       if (!isMobile) {
         tl.to(
           [fillAnak, fillHahal],
           {
             width: (i) => [fillAnakAtFinal, fillHahalAtFinal][i] + 'px',
-            duration: 2.6,
+            duration: 3.4,
             ease: 'expo.inOut',
           },
           '<'
@@ -502,7 +562,7 @@ function App() {
           top: finalLoaderPos + 'px',
           left: finalLoaderPos + 'px',
           yPercent: 0,
-          duration: 2.6,
+          duration: 3.4,
           ease: 'expo.inOut',
         },
         '<'
@@ -515,28 +575,28 @@ function App() {
         '#content',
         {
           opacity: 1,
-          duration: 2.0,
+          duration: 2.6,
           ease: 'power3.out',
           onStart: () => lenis.start(),
         },
-        '-=1.6'
+        '-=2.0'
       )
 
-      // 5. Stagger reveal
+      // 5. Stagger reveal — gentler stagger, longer durations
       tl.to(
         '#details p',
-        { opacity: 1, y: 0, duration: 2.0, stagger: 0.28, ease: 'power3.out' },
-        '-=1.4'
+        { opacity: 1, y: 0, duration: 2.4, stagger: 0.34, ease: 'power3.out' },
+        '-=1.8'
       )
       tl.to(
         '.projectPara',
-        { opacity: 1, y: 0, duration: 2.0, stagger: 0.12, ease: 'power3.out' },
-        '-=1.6'
+        { opacity: 1, y: 0, duration: 2.4, stagger: 0.14, ease: 'power3.out' },
+        '-=2.0'
       )
       tl.to(
         '#connectDiv p',
-        { opacity: 1, y: 0, duration: 2.0, stagger: 0.22, ease: 'power3.out' },
-        '-=1.4'
+        { opacity: 1, y: 0, duration: 2.4, stagger: 0.26, ease: 'power3.out' },
+        '-=1.8'
       )
 
       // ── Footer scroll-triggered animations ────────────────────────
@@ -584,7 +644,6 @@ function App() {
       // ── Cleanup ───────────────────────────────────────────────────
       return () => {
         if (audioRafId) cancelAnimationFrame(audioRafId)
-        window.removeEventListener('mousemove', onMouseMove)
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
         gsap.ticker.remove(rafFn)
@@ -606,18 +665,27 @@ function App() {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleStart() }}
         >
-          <span className="startPromptText">click anywhere</span>
+          <span className="startPromptText">
+            <span className="startPromptMain">press anywhere</span>
+            <span className="startPromptSub">the other side awaits</span>
+          </span>
         </div>
       )}
       {focusActive && (
-        <div
-          id="focusBackdrop"
-          onClick={exitFocusMode}
-          role="button"
-          aria-label="Skip video and continue"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') exitFocusMode() }}
-        />
+        <>
+          <div
+            id="focusBackdrop"
+            onClick={exitFocusMode}
+            role="button"
+            aria-label="Skip video and continue"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') exitFocusMode() }}
+          />
+          <div id="focusCaption" aria-live="polite" aria-hidden="true">
+            <span>But who wants an easy life?</span>
+            <span>It&apos;s boring.</span>
+          </div>
+        </>
       )}
       <div id="profilePhoto" role="presentation" aria-hidden="true">
         <video
@@ -626,7 +694,6 @@ function App() {
           muted
           loop
           playsInline
-          autoPlay
           preload="auto"
           tabIndex={-1}
         />

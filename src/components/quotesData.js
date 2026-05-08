@@ -1,16 +1,17 @@
 const quotesData = [
+  // Drake
   { line1: "Hold on,", line2: "we're going home.", source: "Drake" },
-  { line1: "I might do another", line2: "Chicago freestyle.", source: "Drake" },
-  { line1: "Don't you ever", line2: "stay the night again.", source: "Drake feat. Giveon" },
-  { line1: "When to say when,", line2: "when to say when.", source: "Drake" },
-  { line1: "I lost a step", line2: "but I'm still in the race.", source: "Drake" },
-  { line1: "I'll take care", line2: "of you.", source: "Drake" },
-  { line1: "You the best", line2: "I ever had.", source: "Drake" },
   { line1: "Started from the bottom,", line2: "now we're here.", source: "Drake" },
-  { line1: "You used to call me", line2: "on my cell phone.", source: "Drake" },
-  { line1: "I only love my bed", line2: "and my momma.", source: "Drake" },
-  { line1: "Tension between us,", line2: "like picket fences.", source: "Drake" },
-  { line1: "Know yourself,", line2: "know your worth.", source: "Drake" },
+  { line1: "I lost a step", line2: "but I'm still in the race.", source: "Drake" },
+  { line1: "When to say when,", line2: "when to say when.", source: "Drake" },
+  // The Godfather
+  { line1: "I'll make him", line2: "an offer he can't refuse.", source: "The Godfather" },
+  { line1: "Leave the gun.", line2: "Take the cannoli.", source: "The Godfather" },
+  { line1: "Keep your friends close,", line2: "your enemies closer.", source: "The Godfather" },
+  { line1: "It's not personal,", line2: "it's strictly business.", source: "The Godfather" },
+  // Bhaag Milkha Bhaag
+  { line1: "Bhaag, Milkha,", line2: "bhaag.", source: "Bhaag Milkha Bhaag" },
+  { line1: "Mujhe aaj", line2: "bhi yaad hai.", source: "Bhaag Milkha Bhaag" },
 ]
 
 export default quotesData
