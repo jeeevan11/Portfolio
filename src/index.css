@@ -3,6 +3,9 @@ html {
   padding: 0;
   overflow-x: hidden;
   background-color: #00291C;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -10,6 +13,27 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: transparent;
+  min-height: 100vh;
+}
+
+img, svg, video {
+  display: block;
+  max-width: 100%;
+}
+
+/* Respect reduced-motion preference — keep final visual state, kill motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  #content, #details p, .projectPara, #connectDiv p,
+  #footerYear, #footerMark, .footerBackTop, #profilePhoto {
+    opacity: 1 !important;
+  }
+  #footerLine { transform: scaleX(1) !important; }
 }
 
 /* Prevent flash of content before GSAP intro animation runs after fonts ready */
@@ -93,6 +117,49 @@ html, body, * {
 
 @media (max-width: 900px) {
   #profilePhoto { display: none; }
+}
+
+/* ── Sound toggle — minimal dot, top right ───────────────────── */
+#soundToggle {
+  position: fixed;
+  top: 26px;
+  right: 26px;
+  z-index: 100;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  background: #F0E7C2;
+  border: 1px solid #F0E7C2;
+  cursor: url('/cursor.svg') 2 2, auto;
+  opacity: 0;
+  transition:
+    opacity 0.4s cubic-bezier(0.25, 0, 0, 1),
+    background-color 0.45s cubic-bezier(0.25, 0, 0, 1),
+    transform 0.4s cubic-bezier(0.25, 0, 0, 1);
+  animation: soundToggleFadeIn 1.2s cubic-bezier(0.25, 0, 0, 1) 4.5s forwards;
+}
+
+#soundToggle:hover {
+  opacity: 1 !important;
+  transform: scale(1.15);
+}
+
+#soundToggle[aria-pressed="false"] {
+  background: transparent;
+}
+
+@keyframes soundToggleFadeIn {
+  to { opacity: 0.5; }
+}
+
+@media (max-width: 768px) {
+  #soundToggle {
+    top: 18px;
+    right: 18px;
+    width: 8px;
+    height: 8px;
+  }
 }
 
 /* Quote swap animation — runs on Footer key change */

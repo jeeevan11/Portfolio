@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
@@ -44,14 +44,27 @@ gsap.registerPlugin(ScrollTrigger)
 function App() {
   const [theme] = useState('dark')
   const [quoteIndex, setQuoteIndex] = useState(0)
+  const [soundOn, setSoundOn] = useState(true)
+  const soundOnRef = useRef(true)
+  const ambientAudioRef = useRef(null)
 
-  const handlePhotoHover = () => {
+  const shuffleQuote = () => {
     setQuoteIndex(i => {
       if (quotes.length <= 1) return i
       let next
       do { next = Math.floor(Math.random() * quotes.length) } while (next === i)
       return next
     })
+  }
+
+  const handleSoundToggle = () => {
+    const next = !soundOnRef.current
+    soundOnRef.current = next
+    setSoundOn(next)
+    const audio = ambientAudioRef.current
+    if (!audio) return
+    if (next) audio.play().catch(() => {})
+    else audio.pause()
   }
 
   useEffect(() => {
@@ -76,30 +89,17 @@ function App() {
 
       const cleanupClicks = initMechanicalClicks(lenis)
 
-      // ── Proximity audio: instrumental fades in as cursor nears photo ──
+      // ── Ambient music: proximity fade in/out, on by default; click photo to toggle ──
       const ambientAudio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
       ambientAudio.loop = true
       ambientAudio.preload = 'auto'
       ambientAudio.volume = 0
-      let audioUnlocked = false
-      let audioPlaying = false
+      ambientAudioRef.current = ambientAudio
+
       let targetVol = 0
       let currentVol = 0
       const MAX_VOL = 0.42       // capped so mechanical clicks remain audible
       const MAX_DIST = 380       // px — beyond this, silent
-
-      const unlockAmbient = () => {
-        if (audioUnlocked) return
-        audioUnlocked = true
-        ambientAudio.play().then(() => {
-          ambientAudio.pause()
-          ambientAudio.currentTime = 0
-          audioPlaying = false
-        }).catch(() => { audioUnlocked = false })
-      }
-      ;['pointerdown', 'click', 'keydown', 'touchstart'].forEach(e =>
-        document.addEventListener(e, unlockAmbient, { once: true, passive: true })
-      )
 
       const onMouseMove = (e) => {
         const photoEl = document.getElementById('profilePhoto')
@@ -114,30 +114,34 @@ function App() {
         let t = 1 - dist / MAX_DIST
         if (t < 0) t = 0
         if (t > 1) t = 1
-        // smoothstep — natural feeling falloff
-        t = t * t * (3 - 2 * t)
+        t = t * t * (3 - 2 * t)  // smoothstep falloff
         targetVol = t * MAX_VOL
       }
       window.addEventListener('mousemove', onMouseMove, { passive: true })
 
-      // Volume lerp loop — buttery transitions, separate from GSAP timeline
+      // Volume lerp loop — buttery transitions; respects sound toggle
       let audioRafId = null
       const tickAudio = () => {
-        currentVol += (targetVol - currentVol) * 0.08
+        const effectiveTarget = soundOnRef.current ? targetVol : 0
+        currentVol += (effectiveTarget - currentVol) * 0.08
         if (currentVol < 0.0008) currentVol = 0
         ambientAudio.volume = Math.max(0, Math.min(1, currentVol))
-
-        if (audioUnlocked) {
-          if (currentVol > 0.005 && !audioPlaying) {
-            ambientAudio.play().then(() => { audioPlaying = true }).catch(() => {})
-          } else if (currentVol === 0 && audioPlaying) {
-            ambientAudio.pause()
-            audioPlaying = false
-          }
-        }
         audioRafId = requestAnimationFrame(tickAudio)
       }
       audioRafId = requestAnimationFrame(tickAudio)
+
+      // Auto-start on load; if browser blocks autoplay, kick in on first gesture
+      const tryStart = () => {
+        if (!soundOnRef.current) return
+        ambientAudio.play().catch(() => {})
+      }
+      tryStart()
+      const onFirstGesture = () => {
+        gestureEvents.forEach(e => document.removeEventListener(e, onFirstGesture))
+        tryStart()
+      }
+      const gestureEvents = ['click', 'pointerdown', 'touchstart', 'keydown', 'wheel']
+      gestureEvents.forEach(e => document.addEventListener(e, onFirstGesture, { passive: true }))
 
       // ── Nav name rolling — direction-aware continuous slot machine ──
       let rollActive = false
@@ -418,6 +422,7 @@ function App() {
       return () => {
         if (audioRafId) cancelAnimationFrame(audioRafId)
         window.removeEventListener('mousemove', onMouseMove)
+        gestureEvents.forEach(e => document.removeEventListener(e, onFirstGesture))
         ambientAudio.pause()
         ambientAudio.src = ''
         cleanupClicks()
@@ -433,14 +438,21 @@ function App() {
     <div className={theme}>
       <div
         id="profilePhoto"
-        onMouseEnter={handlePhotoHover}
-        aria-hidden="true"
+        role="img"
+        aria-label="Jatin Chhanwal portrait"
+      />
+      <button
+        id="soundToggle"
+        type="button"
+        onClick={handleSoundToggle}
+        aria-pressed={soundOn}
+        aria-label={soundOn ? 'Mute ambient music' : 'Unmute ambient music'}
       />
       <Name />
-      <div id="content">
+      <main id="content">
         <Scrollable />
-        <Footer quote={quotes[quoteIndex]} />
-      </div>
+        <Footer quote={quotes[quoteIndex]} onLineHover={shuffleQuote} />
+      </main>
     </div>
   )
 }

@@ -86,6 +86,7 @@
 /* ── Divider line ────────────────────────────────────────────────── */
 
 #footerLine{
+    position: relative;
     height: 1px;
     background-color: currentColor;
     opacity: 0.3;
@@ -93,6 +94,14 @@
     margin-right: clamp(32px, 3vw, 56px);
     transform: scaleX(0);
     transform-origin: left center;
+}
+
+/* Invisible expanded hit area — easier to trigger the line cross */
+#footerLine::before {
+    content: '';
+    position: absolute;
+    inset: -14px 0;
+    pointer-events: auto;
 }
 
 /* ── Name + arrow ────────────────────────────────────────────────── */
