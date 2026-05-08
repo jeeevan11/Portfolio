@@ -1,8 +1,31 @@
-html, body {
+html {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  background-color: #0E0A1C;
+  background-color: #00291C;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: transparent;
+}
+
+/* Prevent flash of content before GSAP intro animation runs after fonts ready */
+#content {
+  opacity: 0;
+}
+#details p,
+.projectPara,
+#connectDiv p,
+#footerYear,
+#footerMark,
+.footerBackTop {
+  opacity: 0;
+}
+#footerLine {
+  transform: scaleX(0);
 }
 
 *{
@@ -16,21 +39,21 @@ html, body {
 }
 
 .light{
-  color: #171614;
-  background-color: #F1ECDE;
+  color: #00291C;
+  background-color: #F0E7C2;
 }
 
 .light a{
-  color: #171614;
+  color: #00291C;
 }
 
 .dark{
-  color: #F1ECDE;
-  background-color: #0E0A1C;
+  color: #F0E7C2;
+  background-color: transparent;
 }
 
 .dark a{
-  color: #F1ECDE;
+  color: #F0E7C2;
 }
 
 ::-webkit-scrollbar{
@@ -40,3 +63,32 @@ html, body {
 html, body, * {
   cursor: url('/cursor.svg') 2 2, auto;
 }
+
+/* ── Single profile photo, left empty space ─────────────────── */
+#profilePhoto {
+  position: fixed;
+  top: 50%;
+  left: 5%;
+  width: clamp(120px, 11vw, 170px);
+  aspect-ratio: 4 / 5;
+  background-color: #954130;
+  background-image: url('/portrait.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  transform: translateY(-50%) rotate(-3deg);
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  animation: profilePhotoFadeIn 1.4s cubic-bezier(0.25, 0, 0, 1) 5s forwards;
+}
+
+@keyframes profilePhotoFadeIn {
+  to { opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  #profilePhoto { display: none; }
+}
+

@@ -4,8 +4,8 @@
     position: relative;
     overflow: hidden;
     padding: clamp(48px, 6vw, 80px) 0 0 0;
-    background: #0E0A1C;
-    color: #F1ECDE;
+    background: #3B0014;
+    color: #F0E7C2;
 }
 
 
@@ -76,7 +76,7 @@
 }
 
 .footerBackTop:hover{
-    color: #F5A218;
+    color: #954130;
 }
 
 .footerBackTop:hover .letterStack{
@@ -115,7 +115,7 @@
     font-size: clamp(44px, 7.5vw, 116px);
     line-height: 0.92;
     letter-spacing: -0.04em;
-    color: #F1ECDE;
+    color: #F0E7C2;
 }
 
 #footerYearText span{
@@ -134,7 +134,7 @@
     font-size: clamp(80px, 16vw, 250px);
     line-height: 0.9;
     letter-spacing: -0.02em;
-    color: #F5A218;
+    color: #954130;
     text-decoration: none;
     flex-shrink: 0;
     padding-bottom: 0.04em;
@@ -144,7 +144,7 @@
 }
 
 #footerArrow:hover{
-    color: #F5D0A0;
+    color: #F0E7C2;
     transform: translateX(0.08em);
 }
 
