@@ -42,11 +42,28 @@ function initMechanicalClicks(lenis) {
 gsap.registerPlugin(ScrollTrigger)
 
 function App() {
-  const [theme] = useState('dark')
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [soundOn, setSoundOn] = useState(true)
   const soundOnRef = useRef(true)
   const ambientAudioRef = useRef(null)
+  const [hasStarted, setHasStarted] = useState(false)
+  const [closing, setClosing] = useState(false)
+  const startedRef = useRef(false)
+  const startSequenceRef = useRef(null)
+
+  const handleStart = () => {
+    if (startedRef.current) return
+    startedRef.current = true
+    setClosing(true)
+    // Body class + start sequence are coupled — the class triggers CSS animations
+    // and the sequence triggers the GSAP timeline. Both fire from the same moment.
+    if (startSequenceRef.current) {
+      startSequenceRef.current()
+    }
+    // If start sequence isn't ready yet (fonts still loading), it'll auto-fire
+    // when ready (see useEffect — checks startedRef.current after setup).
+    setTimeout(() => setHasStarted(true), 600)
+  }
 
   const shuffleQuote = () => {
     setQuoteIndex(i => {
@@ -66,6 +83,10 @@ function App() {
     if (next) audio.play().catch(() => {})
     else audio.pause()
   }
+
+  // Hovering / touching the toggle reveals the creative-word stencil only
+  const handleToggleEnter = () => document.body.classList.add('showCreativeFill')
+  const handleToggleLeave = () => document.body.classList.remove('showCreativeFill')
 
   useEffect(() => {
     const fontsReady =
@@ -89,17 +110,32 @@ function App() {
 
       const cleanupClicks = initMechanicalClicks(lenis)
 
-      // ── Ambient music: proximity fade in/out, on by default; click photo to toggle ──
+      // ── Ambient music ───────────────────────────────────────────────
+      // Desktop: proximity fade based on cursor distance to #profilePhoto.
+      // Mobile/touch: photo is hidden — use steady volume instead.
       const ambientAudio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
       ambientAudio.loop = true
       ambientAudio.preload = 'auto'
       ambientAudio.volume = 0
+      // Helps iOS Safari recognize the element as a media intent
+      ambientAudio.setAttribute('playsinline', '')
+      ambientAudio.setAttribute('webkit-playsinline', '')
       ambientAudioRef.current = ambientAudio
 
-      let targetVol = 0
+      // Sync the React `soundOn` UI state with the actual audio playing state.
+      // This catches autoplay rejections, system pauses (e.g. switching tabs), etc.
+      const onAudioPlay = () => setSoundOn(true)
+      const onAudioPause = () => setSoundOn(false)
+      ambientAudio.addEventListener('play', onAudioPlay)
+      ambientAudio.addEventListener('pause', onAudioPause)
+
+      const isTouch = window.matchMedia('(hover: none)').matches
+      const MOBILE_VOL = 0.32
+      const MAX_VOL = 0.42
+      const MAX_DIST = 380
+
+      let targetVol = isTouch ? MOBILE_VOL : 0
       let currentVol = 0
-      const MAX_VOL = 0.42       // capped so mechanical clicks remain audible
-      const MAX_DIST = 380       // px — beyond this, silent
 
       const onMouseMove = (e) => {
         const photoEl = document.getElementById('profilePhoto')
@@ -117,7 +153,9 @@ function App() {
         t = t * t * (3 - 2 * t)  // smoothstep falloff
         targetVol = t * MAX_VOL
       }
-      window.addEventListener('mousemove', onMouseMove, { passive: true })
+      if (!isTouch) {
+        window.addEventListener('mousemove', onMouseMove, { passive: true })
+      }
 
       // Volume lerp loop — buttery transitions; respects sound toggle
       let audioRafId = null
@@ -130,18 +168,25 @@ function App() {
       }
       audioRafId = requestAnimationFrame(tickAudio)
 
-      // Auto-start on load; if browser blocks autoplay, kick in on first gesture
-      const tryStart = () => {
-        if (!soundOnRef.current) return
-        ambientAudio.play().catch(() => {})
+      // The intro timeline + audio are kicked off by the click on #startScreen.
+      // body.started is added here (not in handleStart) so CSS animations are
+      // strictly coupled to the GSAP timeline starting — no race window.
+      let started = false
+      startSequenceRef.current = () => {
+        if (started) return
+        started = true
+        document.body.classList.add('started')
+        tl.play()
+        if (soundOnRef.current) {
+          // Set audible volume *before* play() so iOS Safari doesn't treat
+          // the muted-start as silent and bail out.
+          ambientAudio.volume = isTouch ? MOBILE_VOL : 0
+          currentVol = ambientAudio.volume
+          ambientAudio.play().catch(() => {})
+        }
       }
-      tryStart()
-      const onFirstGesture = () => {
-        gestureEvents.forEach(e => document.removeEventListener(e, onFirstGesture))
-        tryStart()
-      }
-      const gestureEvents = ['click', 'pointerdown', 'touchstart', 'keydown', 'wheel']
-      gestureEvents.forEach(e => document.addEventListener(e, onFirstGesture, { passive: true }))
+      // If user already clicked the overlay before fonts finished, start now
+      if (startedRef.current) startSequenceRef.current()
 
       // ── Nav name rolling — direction-aware continuous slot machine ──
       let rollActive = false
@@ -281,20 +326,21 @@ function App() {
       }
 
       // ── Rebuild loader as per-letter rolling spans after intro ────
+      // Mobile keeps "JC" (matches the visual it just shrank to);
+      // desktop has the full name in the nav.
       function rebuildNavName() {
         const el = document.getElementById('loader')
         if (!el) return
-        const text = 'JatinChhanwal'
+        const text = isMobile ? 'JC' : 'JatinChhanwal'
         el.style.fontSize = finalLoaderSize + 'px'
         el.innerHTML = Array.from(text).map(char =>
           `<span class="navLetterWrap"><span class="navLetterRoll"><span>${char}</span><span>${char}</span><span>${char}</span></span></span>`
         ).join('')
-        // Sit at middle copy — both directions can roll without a visible jump
         gsap.set('.navLetterRoll', { y: '-1em' })
       }
 
-      // ── Master timeline ───────────────────────────────────────────
-      const tl = gsap.timeline()
+      // ── Master timeline (paused — runs after first user click) ────
+      const tl = gsap.timeline({ paused: true })
 
       // 1. Breathe in — slow, deliberate fade
       tl.to(loader, { opacity: 1, duration: 2.0, ease: 'power3.out', delay: 0.3 })
@@ -422,7 +468,8 @@ function App() {
       return () => {
         if (audioRafId) cancelAnimationFrame(audioRafId)
         window.removeEventListener('mousemove', onMouseMove)
-        gestureEvents.forEach(e => document.removeEventListener(e, onFirstGesture))
+        ambientAudio.removeEventListener('play', onAudioPlay)
+        ambientAudio.removeEventListener('pause', onAudioPause)
         ambientAudio.pause()
         ambientAudio.src = ''
         cleanupClicks()
@@ -435,7 +482,20 @@ function App() {
   }, [])
 
   return (
-    <div className={theme}>
+    <div className="dark">
+      {!hasStarted && (
+        <div
+          id="startScreen"
+          className={closing ? 'closing' : ''}
+          onClick={handleStart}
+          role="button"
+          aria-label="Click anywhere to enter"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleStart() }}
+        >
+          <span className="startPromptText">click anywhere</span>
+        </div>
+      )}
       <div
         id="profilePhoto"
         role="img"
@@ -445,9 +505,25 @@ function App() {
         id="soundToggle"
         type="button"
         onClick={handleSoundToggle}
+        onMouseEnter={handleToggleEnter}
+        onMouseLeave={handleToggleLeave}
+        onTouchStart={handleToggleEnter}
+        onTouchEnd={handleToggleLeave}
+        onTouchCancel={handleToggleLeave}
         aria-pressed={soundOn}
-        aria-label={soundOn ? 'Mute ambient music' : 'Unmute ambient music'}
-      />
+        aria-label={soundOn ? 'Pause music' : 'Play music'}
+      >
+        {soundOn ? (
+          <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" focusable="false">
+            <rect x="3" y="2" width="2" height="10" fill="currentColor" />
+            <rect x="9" y="2" width="2" height="10" fill="currentColor" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" focusable="false">
+            <path d="M3 2 L12 7 L3 12 Z" fill="currentColor" />
+          </svg>
+        )}
+      </button>
       <Name />
       <main id="content">
         <Scrollable />
