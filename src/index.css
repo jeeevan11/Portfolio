@@ -8,6 +8,9 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  /* Block iOS rubber-band overscroll past the wine footer */
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -17,6 +20,8 @@ body {
   background-color: transparent;
   min-height: 100vh;
   min-height: 100dvh;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 img, svg, video {
@@ -42,6 +47,21 @@ img, svg, video {
 /* Prevent flash of content before GSAP intro animation runs after fonts ready */
 #content {
   opacity: 0;
+}
+
+/* Hard guarantee: while the JC loader is doing its expand/shrink theatrics,
+   nothing else on the page is visible. body.intro is removed only after the
+   loader parks at the top-left corner. */
+body.intro #content,
+body.intro #details p,
+body.intro .projectPara,
+body.intro #connectDiv p,
+body.intro #footerYear,
+body.intro #footerMark,
+body.intro .footerBackTop {
+  opacity: 0 !important;
+  visibility: hidden;
+  pointer-events: none;
 }
 #details p,
 .projectPara,
