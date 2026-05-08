@@ -18,6 +18,12 @@ body.navDetailsHover #details p {
     display: inline-block;
     line-height: inherit;
     cursor: url('/cursor.svg') 2 2, pointer;
+    /* Mobile: kill iOS long-press menu, text selection, drag image preview */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #loader {
