@@ -2,7 +2,7 @@ import './Name.css'
 
 // Spans must be on a single line so JSX doesn't insert whitespace
 // between them — the loader text "jatinchhanwal" must render seamlessly.
-function Name() {
+function Name({ onNameClick }) {
   const showFill = () => document.body.classList.add('showCreativeFill')
   const hideFill = () => document.body.classList.remove('showCreativeFill')
 
@@ -14,7 +14,11 @@ function Name() {
       onTouchStart={showFill}
       onTouchEnd={hideFill}
       onTouchCancel={hideFill}
+      onClick={onNameClick}
       aria-label="Jatin Chhanwal"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNameClick && onNameClick() }}
     >
       <span id="letterJ">J</span><span className="loaderFill" id="fillAtin">atin</span><span id="letterC">C</span><span className="loaderFill" id="fillHhanwal">hhanwal</span>
     </h1>

@@ -3,10 +3,10 @@ import Projects from './Projects'
 import Connect from './Connect'
 import './Scrollable.css'
 
-function Scrollable() {
+function Scrollable({ onCreativeClick }) {
   return (
     <div id="scrollableDiv">
-      <Details />
+      <Details onCreativeClick={onCreativeClick} />
       <Projects />
       <Connect />
     </div>
