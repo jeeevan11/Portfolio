@@ -2,7 +2,9 @@ import './Footer.css'
 
 const BACK_TO_TOP_TEXT = 'BACK TO TOP ↑'
 
-function Footer() {
+const DEFAULT_QUOTE = { line1: "Hold on,", line2: "we're going home.", source: "Drake" }
+
+function Footer({ quote = DEFAULT_QUOTE }) {
   return (
     <div id="footerDiv">
       <div id="footerTopBar">
@@ -15,8 +17,8 @@ function Footer() {
               style={{ '--delay': `${i * 0.03}s` }}
             >
               <span className="letterStack">
-                <span>{char === ' ' ? ' ' : char}</span>
-                <span>{char === ' ' ? ' ' : char}</span>
+                <span>{char === ' ' ? ' ' : char}</span>
+                <span>{char === ' ' ? ' ' : char}</span>
               </span>
             </span>
           ))}
@@ -24,10 +26,10 @@ function Footer() {
       </div>
       <div id="footerLine"></div>
       <div id="footerYear">
-        <div id="footerYearText">
-          <span>Hold on,</span>
-          <span>we're going home.</span>
-          <span id="footerAttrib">— Drake</span>
+        <div id="footerYearText" key={quote.line1 + quote.line2}>
+          <span>{quote.line1}</span>
+          <span>{quote.line2}</span>
+          <span id="footerAttrib">— {quote.source}</span>
         </div>
         <a
           id="footerArrow"

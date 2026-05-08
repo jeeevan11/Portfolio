@@ -75,13 +75,16 @@ html, body, * {
   background-image: url('/portrait.jpg');
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  padding: 0;
   border-radius: 6px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  transform: translateY(-50%) rotate(-3deg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  transform: translateY(-50%) rotate(-2deg);
   z-index: 50;
-  pointer-events: none;
   opacity: 0;
-  animation: profilePhotoFadeIn 1.4s cubic-bezier(0.25, 0, 0, 1) 5s forwards;
+  animation: profilePhotoFadeIn 1.6s cubic-bezier(0.25, 0, 0, 1) 5s forwards;
+  cursor: url('/cursor.svg') 2 2, auto;
 }
 
 @keyframes profilePhotoFadeIn {
@@ -90,5 +93,15 @@ html, body, * {
 
 @media (max-width: 900px) {
   #profilePhoto { display: none; }
+}
+
+/* Quote swap animation — runs on Footer key change */
+#footerYearText {
+  animation: quoteSwap 0.55s cubic-bezier(0.25, 0, 0, 1);
+}
+
+@keyframes quoteSwap {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
