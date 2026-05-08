@@ -5,8 +5,15 @@ const BACK_TO_TOP_TEXT = 'BACK TO TOP ↑'
 const DEFAULT_QUOTE = { line1: "Hold on,", line2: "we're going home.", source: "Drake" }
 
 function Footer({ quote = DEFAULT_QUOTE, onLineHover }) {
+  // Click anywhere on the Wine footer (except the email arrow) shuffles the quote.
+  // Email arrow keeps its own behavior so users don't shuffle when leaving.
+  const handleFooterClick = (e) => {
+    if (e.target.closest('#footerArrow')) return
+    if (onLineHover) onLineHover()
+  }
+
   return (
-    <footer id="footerDiv" role="contentinfo">
+    <footer id="footerDiv" role="contentinfo" onClick={handleFooterClick}>
       <div id="footerTopBar">
         <span id="footerMark">FOLIO / 26</span>
         <button className="footerBackTop" type="button">

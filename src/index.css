@@ -111,13 +111,14 @@ html, body, * {
   will-change: opacity, filter, width, transform;
   contain: layout paint;
   transition:
-    top 0.9s cubic-bezier(0.25, 0, 0, 1),
-    left 0.9s cubic-bezier(0.25, 0, 0, 1),
-    width 0.9s cubic-bezier(0.25, 0, 0, 1),
-    border-radius 0.9s cubic-bezier(0.25, 0, 0, 1),
-    transform 0.9s cubic-bezier(0.25, 0, 0, 1),
-    box-shadow 0.9s cubic-bezier(0.25, 0, 0, 1),
-    filter 0.9s cubic-bezier(0.25, 0, 0, 1);
+    opacity 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    top 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    left 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    width 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-radius 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 #profilePhoto video {
@@ -147,7 +148,15 @@ body.musicPaused:not(.focusMode) #profilePhoto {
   opacity: 0;
   pointer-events: none;
   cursor: url('/cursor.svg') 2 2, pointer;
-  transition: opacity 0.7s cubic-bezier(0.25, 0, 0, 1);
+  transition:
+    opacity 1.0s cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 1.0s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body.focusMode #focusBackdrop {
+  /* Subtle translucent glass — perceptible only against the background */
+  backdrop-filter: blur(2px) saturate(0.85);
+  -webkit-backdrop-filter: blur(2px) saturate(0.85);
 }
 
 body.focusMode #focusBackdrop {
@@ -155,12 +164,30 @@ body.focusMode #focusBackdrop {
   pointer-events: auto;
 }
 
+/* Soft pre-blur on JC/Creative click — stencil dominates briefly before video */
+body.focusEntering #content,
+body.focusEntering #loader,
+body.focusEntering #soundToggle {
+  filter: blur(5px) brightness(0.55) saturate(0.8);
+  transition: filter 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
 body.focusMode #content,
 body.focusMode #loader,
 body.focusMode #soundToggle {
-  filter: blur(14px) brightness(0.35);
+  filter: blur(14px) brightness(0.35) saturate(0.7);
   pointer-events: none;
-  transition: filter 0.7s cubic-bezier(0.25, 0, 0, 1);
+  transition: filter 1.0s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Silence beat after video ends — video HARD-CUT to gone (so the first
+   frame doesn't ghost during the fade), backdrop smoothly transitions black */
+body.focusEnding #profilePhoto {
+  opacity: 0 !important;
+  visibility: hidden;
+}
+body.focusEnding #focusBackdrop {
+  background: rgba(0, 0, 0, 1);
 }
 
 body.focusMode #profilePhoto {
@@ -173,6 +200,64 @@ body.focusMode #profilePhoto {
   box-shadow: 0 50px 140px rgba(0, 0, 0, 0.85);
   filter: none !important;
   opacity: 1 !important;
+}
+
+/* Default state after intro: video completely hidden */
+body.started:not(.focusMode) #profilePhoto {
+  opacity: 0 !important;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Cinematic intro phase: full black backdrop, video stays hidden, captions on */
+body.focusIntro #focusBackdrop {
+  background: rgba(0, 0, 0, 1);
+}
+
+body.focusIntro #profilePhoto {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+#focusCaption {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  pointer-events: none;
+  text-align: center;
+  width: min(90%, 820px);
+  padding: 0 24px;
+}
+
+#focusCaption span {
+  display: block;
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: clamp(20px, 2.6vw, 38px);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: #F0E7C2;
+  line-height: 1.3;
+  opacity: 0;
+}
+
+/* Caption is fully present the moment the start screen lifts.
+   No fade-in. Just there. Smooth fade-out before the video reveal. */
+body.focusIntro #focusCaption span {
+  opacity: 0.95;
+  animation: captionOut 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s forwards;
+}
+
+@keyframes captionOut {
+  from { opacity: 0.95; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
 }
 
 @keyframes profilePhotoFadeIn {
@@ -215,16 +300,34 @@ body.focusMode #profilePhoto {
 }
 
 .startPromptText {
-  color: #F0E7C2;
-  font-family: "Kumbh Sans", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7em;
+  text-align: center;
   opacity: 0;
   animation:
     promptIn 0.9s cubic-bezier(0.25, 0, 0, 1) 0.3s forwards,
     promptPulse 2.4s ease-in-out 1.4s infinite;
+}
+
+.startPromptMain {
+  color: #F0E7C2;
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.startPromptSub {
+  color: #F0E7C2;
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.55;
 }
 
 @keyframes promptIn {
