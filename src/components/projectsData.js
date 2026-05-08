@@ -4,7 +4,7 @@ const projectsData = [
     name: 'Social Gravity AI',
     link: 'https://socialgravity.ai/',
     year: 2026,
-    tags: 'Founding Member · Paying users · Raising ↑',
+    tags: 'Founding Member · Paying users · Raising ↑↑↑',
     featured: true,
   },
   {

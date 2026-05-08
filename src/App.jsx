@@ -221,7 +221,7 @@ function App() {
       // 1. Breathe in — slow, deliberate fade
       tl.to(loader, { opacity: 1, duration: 2.0, ease: 'power3.out', delay: 0.3 })
 
-      // 2. Name expands — pause before so the initials are seen, then bloom open
+      // 2. Name expands
       tl.to(
         [fillAnak, fillHahal],
         {
@@ -237,8 +237,7 @@ function App() {
         '<'
       )
 
-      // 3. Hold — full name sits centre-screen, the held breath (1.5s pause)
-      //    then exhale: shrink to nav corner
+      // 3. Hold then exhale: shrink to nav corner
       tl.to(loaderEls, {
         fontSize: finalLoaderSize + 'px',
         duration: 2.6,
@@ -268,10 +267,9 @@ function App() {
         '<'
       )
 
-      // Swap loader internals to per-letter rolling structure once nav position reached
       tl.call(() => rebuildNavName(), null, '>')
 
-      // 4. Page breathes open — content fades in gently
+      // 4. Page breathes open
       tl.to(
         '#content',
         {
@@ -283,7 +281,7 @@ function App() {
         '-=1.6'
       )
 
-      // 5. Stagger reveal details / projects / connect — each floats up slowly
+      // 5. Stagger reveal
       tl.to(
         '#details p',
         { opacity: 1, y: 0, duration: 2.0, stagger: 0.28, ease: 'power3.out' },
@@ -340,44 +338,10 @@ function App() {
         })
       }
 
-      // ── Smooth-flowing palette (no muddy RGB intermediates between hues) ──
-      const footerEl = document.querySelector('#footerDiv')
-      const wrapperEl = document.querySelector('.dark')
-      const bgTargets = [footerEl, wrapperEl, document.body].filter(Boolean)
-      const footerColors = [
-        '#0E0A1C',  // deep night (matches body)
-        '#1A0835',  // dark purple
-        '#3A0F40',  // mid purple
-        '#5C1830',  // purple-red
-        '#6B1515',  // dark crimson
-        '#C41818',  // bold red
-        '#E25018',  // sunset orange
-        '#8B5200',  // amber
-        '#3B1A09',  // dark warm brown
-        '#1F1230',  // back through dark warm-purple
-      ]
-      let footerColorTl = null
-
-      if (footerEl) {
-        gsap.set(bgTargets, { backgroundColor: footerColors[0] })
-        footerColorTl = gsap.timeline({ repeat: -1, paused: true })
-        footerColors.slice(1).forEach(color => {
-          footerColorTl.to(bgTargets, { backgroundColor: color, duration: 3.0, ease: 'sine.inOut' })
-        })
-        // Return seamlessly to the first color to close the loop
-        footerColorTl.to(bgTargets, { backgroundColor: footerColors[0], duration: 3.0, ease: 'sine.inOut' })
-
-        ScrollTrigger.create({
-          trigger: '#footerDiv',
-          start: 'top 70%',
-          once: true,
-          onEnter: () => footerColorTl.play(),
-        })
-      }
+      // No background cycle — using static palette colors
 
       // ── Cleanup ───────────────────────────────────────────────────
       return () => {
-        if (footerColorTl) footerColorTl.kill()
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
         gsap.ticker.remove(rafFn)
@@ -389,6 +353,7 @@ function App() {
 
   return (
     <div className={theme}>
+      <div id="profilePhoto" aria-hidden="true"></div>
       <Name />
       <div id="content">
         <Scrollable />

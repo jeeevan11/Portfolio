@@ -29,15 +29,15 @@
 }
 
 #projectRefs a:hover{
-    color: #ECFFA7;
+    color: #687451;
 }
 
 #projectRefs a.featuredLink {
-    color: #FFA6E6;
+    color: #954130;
 }
 
 #projectRefs a.featuredLink:hover {
-    color: #ECFFA7;
+    color: #F0E7C2;
 }
 
 #projectRefs a:hover::after{
@@ -65,7 +65,7 @@
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #ECFFA7;
+    color: #687451;
     white-space: nowrap;
     opacity: 0;
     transform: translateY(8px);
