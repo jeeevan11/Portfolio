@@ -5,6 +5,7 @@ import Lenis from 'lenis'
 import Name from './components/Name'
 import Scrollable from './components/Scrollable'
 import Footer from './components/Footer'
+import quotes from './components/quotesData'
 
 let _audioCtx = null
 let _lastClickTime = 0
@@ -42,6 +43,16 @@ gsap.registerPlugin(ScrollTrigger)
 
 function App() {
   const [theme] = useState('dark')
+  const [quoteIndex, setQuoteIndex] = useState(0)
+
+  const handlePhotoHover = () => {
+    setQuoteIndex(i => {
+      if (quotes.length <= 1) return i
+      let next
+      do { next = Math.floor(Math.random() * quotes.length) } while (next === i)
+      return next
+    })
+  }
 
   useEffect(() => {
     const fontsReady =
@@ -64,6 +75,69 @@ function App() {
       lenis.stop()
 
       const cleanupClicks = initMechanicalClicks(lenis)
+
+      // ── Proximity audio: instrumental fades in as cursor nears photo ──
+      const ambientAudio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
+      ambientAudio.loop = true
+      ambientAudio.preload = 'auto'
+      ambientAudio.volume = 0
+      let audioUnlocked = false
+      let audioPlaying = false
+      let targetVol = 0
+      let currentVol = 0
+      const MAX_VOL = 0.42       // capped so mechanical clicks remain audible
+      const MAX_DIST = 380       // px — beyond this, silent
+
+      const unlockAmbient = () => {
+        if (audioUnlocked) return
+        audioUnlocked = true
+        ambientAudio.play().then(() => {
+          ambientAudio.pause()
+          ambientAudio.currentTime = 0
+          audioPlaying = false
+        }).catch(() => { audioUnlocked = false })
+      }
+      ;['pointerdown', 'click', 'keydown', 'touchstart'].forEach(e =>
+        document.addEventListener(e, unlockAmbient, { once: true, passive: true })
+      )
+
+      const onMouseMove = (e) => {
+        const photoEl = document.getElementById('profilePhoto')
+        if (!photoEl) { targetVol = 0; return }
+        const rect = photoEl.getBoundingClientRect()
+        if (rect.width === 0) { targetVol = 0; return }
+        const cx = rect.left + rect.width / 2
+        const cy = rect.top + rect.height / 2
+        const dx = e.clientX - cx
+        const dy = e.clientY - cy
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        let t = 1 - dist / MAX_DIST
+        if (t < 0) t = 0
+        if (t > 1) t = 1
+        // smoothstep — natural feeling falloff
+        t = t * t * (3 - 2 * t)
+        targetVol = t * MAX_VOL
+      }
+      window.addEventListener('mousemove', onMouseMove, { passive: true })
+
+      // Volume lerp loop — buttery transitions, separate from GSAP timeline
+      let audioRafId = null
+      const tickAudio = () => {
+        currentVol += (targetVol - currentVol) * 0.08
+        if (currentVol < 0.0008) currentVol = 0
+        ambientAudio.volume = Math.max(0, Math.min(1, currentVol))
+
+        if (audioUnlocked) {
+          if (currentVol > 0.005 && !audioPlaying) {
+            ambientAudio.play().then(() => { audioPlaying = true }).catch(() => {})
+          } else if (currentVol === 0 && audioPlaying) {
+            ambientAudio.pause()
+            audioPlaying = false
+          }
+        }
+        audioRafId = requestAnimationFrame(tickAudio)
+      }
+      audioRafId = requestAnimationFrame(tickAudio)
 
       // ── Nav name rolling — direction-aware continuous slot machine ──
       let rollActive = false
@@ -342,6 +416,10 @@ function App() {
 
       // ── Cleanup ───────────────────────────────────────────────────
       return () => {
+        if (audioRafId) cancelAnimationFrame(audioRafId)
+        window.removeEventListener('mousemove', onMouseMove)
+        ambientAudio.pause()
+        ambientAudio.src = ''
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
         gsap.ticker.remove(rafFn)
@@ -353,11 +431,15 @@ function App() {
 
   return (
     <div className={theme}>
-      <div id="profilePhoto" aria-hidden="true"></div>
+      <div
+        id="profilePhoto"
+        onMouseEnter={handlePhotoHover}
+        aria-hidden="true"
+      />
       <Name />
       <div id="content">
         <Scrollable />
-        <Footer />
+        <Footer quote={quotes[quoteIndex]} />
       </div>
     </div>
   )
