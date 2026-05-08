@@ -687,6 +687,9 @@ function App() {
           </div>
         </>
       )}
+      {/* Creative press-and-hold photo peek — visible while body.creativePeek is active */}
+      <div id="creativePeekBackdrop" aria-hidden="true" />
+      <img id="creativePeek" alt="" aria-hidden="true" draggable="false" />
       <div id="profilePhoto" role="presentation" aria-hidden="true">
         <video
           ref={ambientVideoRef}
