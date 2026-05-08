@@ -11,3 +11,37 @@
 body.navDetailsHover #details p {
     color: #954130;
 }
+
+/* ── Stencil effect on the word "Creative" ───────────────────── */
+.creativeWord {
+    position: relative;
+    display: inline-block;
+    line-height: inherit;
+}
+
+.creativeWordBase,
+.creativeWordFill {
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+}
+
+.creativeWordFill {
+    position: absolute;
+    inset: 0;
+    background-image: url('/creative.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    opacity: 0;
+    transition: opacity 0.7s cubic-bezier(0.25, 0, 0, 1);
+    pointer-events: none;
+    user-select: none;
+}
+
+.creativeWord:hover .creativeWordFill {
+    opacity: 1;
+}

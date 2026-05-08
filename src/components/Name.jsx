@@ -7,9 +7,9 @@ function Name() {
   const handleLeave = () => document.body.classList.remove('navDetailsHover')
 
   return (
-    <div id="loader" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+    <h1 id="loader" onMouseEnter={handleEnter} onMouseLeave={handleLeave} aria-label="Jatin Chhanwal">
       <span id="letterJ">J</span><span className="loaderFill" id="fillAtin">atin</span><span id="letterC">C</span><span className="loaderFill" id="fillHhanwal">hhanwal</span>
-    </div>
+    </h1>
   )
 }
 

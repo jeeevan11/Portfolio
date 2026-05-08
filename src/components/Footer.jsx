@@ -4,9 +4,9 @@ const BACK_TO_TOP_TEXT = 'BACK TO TOP ↑'
 
 const DEFAULT_QUOTE = { line1: "Hold on,", line2: "we're going home.", source: "Drake" }
 
-function Footer({ quote = DEFAULT_QUOTE }) {
+function Footer({ quote = DEFAULT_QUOTE, onLineHover }) {
   return (
-    <div id="footerDiv">
+    <footer id="footerDiv" role="contentinfo">
       <div id="footerTopBar">
         <span id="footerMark">FOLIO / 26</span>
         <button className="footerBackTop" type="button">
@@ -24,7 +24,7 @@ function Footer({ quote = DEFAULT_QUOTE }) {
           ))}
         </button>
       </div>
-      <div id="footerLine"></div>
+      <div id="footerLine" onMouseEnter={onLineHover}></div>
       <div id="footerYear">
         <div id="footerYearText" key={quote.line1 + quote.line2}>
           <span>{quote.line1}</span>
@@ -37,7 +37,7 @@ function Footer({ quote = DEFAULT_QUOTE }) {
           aria-label="Email Jatin"
         >→</a>
       </div>
-    </div>
+    </footer>
   )
 }
 
