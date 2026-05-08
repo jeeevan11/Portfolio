@@ -91,32 +91,88 @@ html, body, * {
   cursor: url('/cursor.svg') 2 2, auto;
 }
 
-/* ── Single profile photo, left empty space ─────────────────── */
+/* ── Ambient video frame, left empty space ──────────────────── */
 #profilePhoto {
   position: fixed;
   top: 50%;
-  left: 5%;
-  width: clamp(120px, 11vw, 170px);
-  aspect-ratio: 4 / 5;
+  left: 4.5%;
+  width: clamp(200px, 17vw, 300px);
+  aspect-ratio: 640 / 496;
   background-color: #954130;
-  background-image: url('/portrait.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   border: none;
   padding: 0;
   border-radius: 6px;
+  overflow: hidden;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
   transform: translate3d(0, -50%, 0) rotate(-2deg);
   z-index: 50;
   opacity: 0;
   cursor: url('/cursor.svg') 2 2, auto;
-  will-change: opacity;
+  will-change: opacity, filter, width, transform;
   contain: layout paint;
+  transition:
+    top 0.9s cubic-bezier(0.25, 0, 0, 1),
+    left 0.9s cubic-bezier(0.25, 0, 0, 1),
+    width 0.9s cubic-bezier(0.25, 0, 0, 1),
+    border-radius 0.9s cubic-bezier(0.25, 0, 0, 1),
+    transform 0.9s cubic-bezier(0.25, 0, 0, 1),
+    box-shadow 0.9s cubic-bezier(0.25, 0, 0, 1),
+    filter 0.9s cubic-bezier(0.25, 0, 0, 1);
+}
+
+#profilePhoto video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
 }
 
 body.started #profilePhoto {
   animation: profilePhotoFadeIn 1.6s cubic-bezier(0.25, 0, 0, 1) 5s forwards;
+}
+
+body.musicPaused:not(.focusMode) #profilePhoto {
+  filter: brightness(0.4) saturate(0.6);
+}
+
+/* ── Focus mode: video centered, world dimmed and blurred ───── */
+#focusBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  cursor: url('/cursor.svg') 2 2, pointer;
+  transition: opacity 0.7s cubic-bezier(0.25, 0, 0, 1);
+}
+
+body.focusMode #focusBackdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.focusMode #content,
+body.focusMode #loader,
+body.focusMode #soundToggle {
+  filter: blur(14px) brightness(0.35);
+  pointer-events: none;
+  transition: filter 0.7s cubic-bezier(0.25, 0, 0, 1);
+}
+
+body.focusMode #profilePhoto {
+  top: 50%;
+  left: 50%;
+  width: min(80vw, 820px);
+  transform: translate(-50%, -50%) rotate(0deg);
+  z-index: 200;
+  border-radius: 4px;
+  box-shadow: 0 50px 140px rgba(0, 0, 0, 0.85);
+  filter: none !important;
+  opacity: 1 !important;
 }
 
 @keyframes profilePhotoFadeIn {
@@ -124,7 +180,21 @@ body.started #profilePhoto {
 }
 
 @media (max-width: 900px) {
-  #profilePhoto { display: none; }
+  /* Mobile: video lives only in focus mode — hidden by default */
+  #profilePhoto {
+    pointer-events: none;
+  }
+  body:not(.focusMode) #profilePhoto {
+    opacity: 0 !important;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+  body.focusMode #profilePhoto {
+    width: min(88vw, 560px) !important;
+    visibility: visible;
+  }
 }
 
 /* ── Start screen overlay — captures the first user gesture ──── */

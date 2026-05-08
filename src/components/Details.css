@@ -17,6 +17,11 @@ body.navDetailsHover #details p {
     position: relative;
     display: inline-block;
     line-height: inherit;
+    cursor: url('/cursor.svg') 2 2, pointer;
+}
+
+#loader {
+    cursor: url('/cursor.svg') 2 2, pointer;
 }
 
 .creativeWordBase,

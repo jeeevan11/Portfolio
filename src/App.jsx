@@ -46,22 +46,103 @@ function App() {
   const [soundOn, setSoundOn] = useState(true)
   const soundOnRef = useRef(true)
   const ambientAudioRef = useRef(null)
+  const ambientVideoRef = useRef(null)
   const [hasStarted, setHasStarted] = useState(false)
   const [closing, setClosing] = useState(false)
   const startedRef = useRef(false)
   const startSequenceRef = useRef(null)
+  const [focusActive, setFocusActive] = useState(false)
+  const focusActiveRef = useRef(false)
+  const focusOnExitRef = useRef(null)
+  const isMobileMQ = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches
+
+  const enterFocusMode = (onExit) => {
+    if (focusActiveRef.current) return
+    focusActiveRef.current = true
+    focusOnExitRef.current = onExit || null
+    setFocusActive(true)
+    document.body.classList.add('focusMode')
+
+    // Pause music while focused video plays
+    const audio = ambientAudioRef.current
+    if (audio) audio.pause()
+
+    const video = ambientVideoRef.current
+    if (video) {
+      video.muted = false
+      video.loop = false
+      try { video.currentTime = 0 } catch (e) {}
+      video.volume = 1.0
+      video.play().catch(() => {})
+
+      const onEnded = () => {
+        video.removeEventListener('ended', onEnded)
+        exitFocusMode()
+      }
+      video.addEventListener('ended', onEnded, { once: true })
+    }
+  }
+
+  const exitFocusMode = () => {
+    if (!focusActiveRef.current) return
+    focusActiveRef.current = false
+    setFocusActive(false)
+    document.body.classList.remove('focusMode')
+
+    const video = ambientVideoRef.current
+    if (video) {
+      video.muted = true
+      video.loop = true
+      try { video.currentTime = 0 } catch (e) {}
+      // Desktop: keep ambient corner loop alive. Mobile: stay paused.
+      if (!isMobileMQ()) {
+        video.play().catch(() => {})
+      } else {
+        video.pause()
+      }
+    }
+
+    // Resume music if user has it on AND intro has already begun
+    const audio = ambientAudioRef.current
+    if (audio && soundOnRef.current && document.body.classList.contains('started')) {
+      audio.play().catch(() => {})
+    }
+
+    if (focusOnExitRef.current) {
+      const cb = focusOnExitRef.current
+      focusOnExitRef.current = null
+      cb()
+    }
+  }
+
+  const handleNameClick = () => {
+    if (!startedRef.current) return
+    enterFocusMode()
+  }
+  const handleCreativeClick = (e) => {
+    if (!startedRef.current) return
+    if (e && e.stopPropagation) e.stopPropagation()
+    enterFocusMode()
+  }
 
   const handleStart = () => {
     if (startedRef.current) return
     startedRef.current = true
     setClosing(true)
-    // Body class + start sequence are coupled — the class triggers CSS animations
-    // and the sequence triggers the GSAP timeline. Both fire from the same moment.
-    if (startSequenceRef.current) {
-      startSequenceRef.current()
-    }
-    // If start sequence isn't ready yet (fonts still loading), it'll auto-fire
-    // when ready (see useEffect — checks startedRef.current after setup).
+    // Enter focus-mode video FIRST. The intro animation + music start AFTER
+    // the focus video ends (or user clicks to skip).
+    enterFocusMode(() => {
+      // Re-trigger audio inside this user-gesture-derived chain
+      const audio = ambientAudioRef.current
+      if (audio && soundOnRef.current) {
+        const isTouch = window.matchMedia('(hover: none)').matches
+        audio.volume = isTouch ? 0.32 : 0
+        audio.play().catch(() => {})
+      }
+      if (startSequenceRef.current) {
+        startSequenceRef.current()
+      }
+    })
     setTimeout(() => setHasStarted(true), 600)
   }
 
@@ -82,7 +163,53 @@ function App() {
     if (!audio) return
     if (next) audio.play().catch(() => {})
     else audio.pause()
+    // Video plays continuously regardless of mute — only the dim filter responds (via body.musicPaused)
   }
+
+  // Sync body.musicPaused with soundOn for photo dimming
+  useEffect(() => {
+    if (soundOn) {
+      document.body.classList.remove('musicPaused')
+    } else {
+      document.body.classList.add('musicPaused')
+    }
+  }, [soundOn])
+
+  // Pause the ambient video on mobile by default — it should only play
+  // during focus mode. Desktop autoplays as the corner ambient loop.
+  useEffect(() => {
+    const video = ambientVideoRef.current
+    if (!video) return
+    if (isMobileMQ()) {
+      video.pause()
+    }
+  }, [])
+
+  // Create the ambient audio element immediately on mount (not waiting for fonts).
+  // Critical for iOS Safari: the audio element must exist when the user taps
+  // the start screen so we can call .play() synchronously inside the click.
+  useEffect(() => {
+    const audio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
+    audio.loop = true
+    audio.preload = 'auto'
+    audio.volume = 0
+    audio.setAttribute('playsinline', '')
+    audio.setAttribute('webkit-playsinline', '')
+    ambientAudioRef.current = audio
+
+    const onPlay = () => setSoundOn(true)
+    const onPauseEv = () => setSoundOn(false)
+    audio.addEventListener('play', onPlay)
+    audio.addEventListener('pause', onPauseEv)
+
+    return () => {
+      audio.removeEventListener('play', onPlay)
+      audio.removeEventListener('pause', onPauseEv)
+      audio.pause()
+      audio.src = ''
+      ambientAudioRef.current = null
+    }
+  }, [])
 
   // Hovering / touching the toggle reveals the creative-word stencil only
   const handleToggleEnter = () => document.body.classList.add('showCreativeFill')
@@ -111,24 +238,9 @@ function App() {
       const cleanupClicks = initMechanicalClicks(lenis)
 
       // ── Ambient music ───────────────────────────────────────────────
-      // Desktop: proximity fade based on cursor distance to #profilePhoto.
-      // Mobile/touch: photo is hidden — use steady volume instead.
-      const ambientAudio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
-      ambientAudio.loop = true
-      ambientAudio.preload = 'auto'
-      ambientAudio.volume = 0
-      // Helps iOS Safari recognize the element as a media intent
-      ambientAudio.setAttribute('playsinline', '')
-      ambientAudio.setAttribute('webkit-playsinline', '')
-      ambientAudioRef.current = ambientAudio
-
-      // Sync the React `soundOn` UI state with the actual audio playing state.
-      // This catches autoplay rejections, system pauses (e.g. switching tabs), etc.
-      const onAudioPlay = () => setSoundOn(true)
-      const onAudioPause = () => setSoundOn(false)
-      ambientAudio.addEventListener('play', onAudioPlay)
-      ambientAudio.addEventListener('pause', onAudioPause)
-
+      // Audio element is created in a separate useEffect (immediately on mount)
+      // so it's ready when the user clicks the start screen. This block just
+      // wires the volume control loop and proximity tracking.
       const isTouch = window.matchMedia('(hover: none)').matches
       const MOBILE_VOL = 0.32
       const MAX_VOL = 0.42
@@ -160,29 +272,34 @@ function App() {
       // Volume lerp loop — buttery transitions; respects sound toggle
       let audioRafId = null
       const tickAudio = () => {
-        const effectiveTarget = soundOnRef.current ? targetVol : 0
-        currentVol += (effectiveTarget - currentVol) * 0.08
-        if (currentVol < 0.0008) currentVol = 0
-        ambientAudio.volume = Math.max(0, Math.min(1, currentVol))
+        const audio = ambientAudioRef.current
+        if (audio) {
+          const effectiveTarget = soundOnRef.current ? targetVol : 0
+          currentVol += (effectiveTarget - currentVol) * 0.08
+          if (currentVol < 0.0008) currentVol = 0
+          audio.volume = Math.max(0, Math.min(1, currentVol))
+        }
         audioRafId = requestAnimationFrame(tickAudio)
       }
       audioRafId = requestAnimationFrame(tickAudio)
 
-      // The intro timeline + audio are kicked off by the click on #startScreen.
-      // body.started is added here (not in handleStart) so CSS animations are
-      // strictly coupled to the GSAP timeline starting — no race window.
+      // The intro timeline is kicked off by the click on #startScreen.
+      // body.started is added here so CSS animations are strictly coupled
+      // to the GSAP timeline starting — no race window.
+      // Audio.play() is handled separately in handleStart (synchronous user gesture).
       let started = false
       startSequenceRef.current = () => {
         if (started) return
         started = true
         document.body.classList.add('started')
         tl.play()
-        if (soundOnRef.current) {
-          // Set audible volume *before* play() so iOS Safari doesn't treat
-          // the muted-start as silent and bail out.
-          ambientAudio.volume = isTouch ? MOBILE_VOL : 0
-          currentVol = ambientAudio.volume
-          ambientAudio.play().catch(() => {})
+        // Sync currentVol so the lerp loop produces audible output immediately
+        const audio = ambientAudioRef.current
+        if (audio && soundOnRef.current) {
+          currentVol = isTouch ? MOBILE_VOL : 0
+          audio.volume = currentVol
+          // Re-attempt play in case handleStart's call was blocked
+          audio.play().catch(() => {})
         }
       }
       // If user already clicked the overlay before fonts finished, start now
@@ -468,10 +585,6 @@ function App() {
       return () => {
         if (audioRafId) cancelAnimationFrame(audioRafId)
         window.removeEventListener('mousemove', onMouseMove)
-        ambientAudio.removeEventListener('play', onAudioPlay)
-        ambientAudio.removeEventListener('pause', onAudioPause)
-        ambientAudio.pause()
-        ambientAudio.src = ''
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
         gsap.ticker.remove(rafFn)
@@ -496,11 +609,28 @@ function App() {
           <span className="startPromptText">click anywhere</span>
         </div>
       )}
-      <div
-        id="profilePhoto"
-        role="img"
-        aria-label="Jatin Chhanwal portrait"
-      />
+      {focusActive && (
+        <div
+          id="focusBackdrop"
+          onClick={exitFocusMode}
+          role="button"
+          aria-label="Skip video and continue"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') exitFocusMode() }}
+        />
+      )}
+      <div id="profilePhoto" role="presentation" aria-hidden="true">
+        <video
+          ref={ambientVideoRef}
+          src="/ambient.mp4"
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="auto"
+          tabIndex={-1}
+        />
+      </div>
       <button
         id="soundToggle"
         type="button"
@@ -524,9 +654,9 @@ function App() {
           </svg>
         )}
       </button>
-      <Name />
+      <Name onNameClick={handleNameClick} />
       <main id="content">
-        <Scrollable />
+        <Scrollable onCreativeClick={handleCreativeClick} />
         <Footer quote={quotes[quoteIndex]} onLineHover={shuffleQuote} />
       </main>
     </div>
