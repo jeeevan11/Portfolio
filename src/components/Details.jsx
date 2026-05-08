@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react'
 import './Details.css'
 
-const FILL_COUNT = 8 // /public/creative-fills/1.jpeg … 8.jpeg
+const FILL_COUNT = 8 // /public/creative-fills/1.webp … 8.webp
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
 
 // Tiny tonal chime for Creative hover/press — soft sine pluck, distinct from
 // the mechanical click sounds. Cheap WebAudio, no asset.
@@ -53,7 +54,7 @@ function Details() {
       next = Math.floor(Math.random() * FILL_COUNT) + 1
     } while (next === lastFillIndexRef.current && FILL_COUNT > 1)
     lastFillIndexRef.current = next
-    fillRef.current.style.backgroundImage = `url('/creative-fills/${next}.jpeg')`
+    fillRef.current.style.backgroundImage = `url('/creative-fills/${next}.webp')`
   }
 
   const handleCreativeHover = () => {
@@ -65,11 +66,18 @@ function Details() {
   // Release / leave the page → vanishes.
   const handleCreativePress = (e) => {
     if (e && e.preventDefault) e.preventDefault()
+    if (IS_MOBILE) {
+      // Phone: there's no peek backdrop, so tap swaps the stencil image
+      // instead. Visible, immediate, no hidden gesture required.
+      pickRandomFill()
+      playCreativeChime(1.0)
+      return
+    }
     playCreativeChime(1.4)
     const peek = document.getElementById('creativePeek')
     if (peek) {
       const idx = lastFillIndexRef.current > 0 ? lastFillIndexRef.current : 1
-      peek.src = `/creative-fills/${idx}.jpeg`
+      peek.src = `/creative-fills/${idx}.webp`
     }
     document.body.classList.add('creativePeek')
   }
@@ -80,11 +88,15 @@ function Details() {
   useEffect(() => {
     pickRandomFill() // initial image so the first reveal is never blank
 
-    // Preload all 8 images so press → instant peek (no loading flash)
-    for (let i = 1; i <= FILL_COUNT; i++) {
-      const pre = new Image()
-      pre.src = `/creative-fills/${i}.jpeg`
-    }
+    // Defer the rest of the preload until the browser is idle — keeps the
+    // initial paint light and lets the JC intro animate without contention.
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500))
+    const idleId = idle(() => {
+      for (let i = 1; i <= FILL_COUNT; i++) {
+        const pre = new Image()
+        pre.src = `/creative-fills/${i}.webp`
+      }
+    })
 
     let wasShowing = document.body.classList.contains('showCreativeFill')
     const observer = new MutationObserver(() => {
@@ -123,7 +135,7 @@ function Details() {
           className="creativeWord"
           role="button"
           tabIndex={0}
-          aria-label="Press and hold to view"
+          aria-label={IS_MOBILE ? 'Tap to swap image' : 'Press and hold to view'}
           onMouseEnter={handleCreativeHover}
           onMouseDown={handleCreativePress}
           onTouchStart={handleCreativePress}

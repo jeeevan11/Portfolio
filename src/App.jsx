@@ -41,7 +41,7 @@ function initMechanicalClicks(lenis) {
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Mobile = no music, no video, no start gate. Pure simple flow.
+// No video on phone. Touch-here screen → JC animation → content reveal.
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
 
 function App() {
@@ -50,9 +50,9 @@ function App() {
   const soundOnRef = useRef(IS_MOBILE ? false : true)
   const ambientAudioRef = useRef(null)
   const ambientVideoRef = useRef(null)
-  const [hasStarted, setHasStarted] = useState(IS_MOBILE)
+  const [hasStarted, setHasStarted] = useState(false)
   const [closing, setClosing] = useState(false)
-  const startedRef = useRef(IS_MOBILE)
+  const startedRef = useRef(false)
   const startSequenceRef = useRef(null)
   const [focusActive, setFocusActive] = useState(false)
   const focusActiveRef = useRef(false)
@@ -65,8 +65,8 @@ function App() {
 
   const enterFocusMode = (onExit, opts = {}) => {
     if (IS_MOBILE) {
-      // No video / focus mode on mobile — fire onExit immediately so the
-      // start sequence still runs.
+      // Phone: no video. Skip the focus-mode cinematic and run the
+      // animation timeline immediately via onExit.
       if (onExit) onExit()
       return
     }
@@ -195,7 +195,7 @@ function App() {
   // JC click → fast open/close, no press-and-hold. focusQuick class
   // overrides transitions to ~0.2s for snappy in/out.
   const triggerFocusFromClick = () => {
-    if (IS_MOBILE) return
+    if (IS_MOBILE) return // no video on phone — JC click does nothing
     if (!startedRef.current || focusActiveRef.current) return
     document.body.classList.add('focusQuick')
     document.body.classList.add('showCreativeFill')
@@ -260,7 +260,7 @@ function App() {
   // Critical for iOS Safari: the audio element must exist when the user taps
   // the start screen so we can call .play() synchronously inside the click.
   useEffect(() => {
-    if (IS_MOBILE) return // mobile: no music at all
+    if (IS_MOBILE) return // no music on phone
     const audio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
     audio.loop = true
     audio.preload = 'auto'
@@ -357,6 +357,7 @@ function App() {
         if (started) return
         started = true
         document.body.classList.add('started')
+        document.body.classList.add('intro') // removed once JC parks at corner
         tl.play()
         // Music does NOT auto-start after the cinematic intro.
         // It only plays when soundOnRef is true AND user is overscrolling at bottom.
@@ -367,8 +368,7 @@ function App() {
           audio.play().catch(() => {})
         }
       }
-      // If user already clicked the overlay before fonts finished, start now
-      if (startedRef.current) startSequenceRef.current()
+      // Bootstrap moved to after timeline construction — see end of effect.
 
       // ── Nav name rolling — direction-aware continuous slot machine ──
       let rollActive = false
@@ -436,15 +436,16 @@ function App() {
       // ── Responsive sizing ─────────────────────────────────────────
       const w = window.innerWidth
       const isMobile = w < 768
-      const initialLoaderSize = Math.min(w * 0.11, 200)
+      // Phone: cap so JatinChhanwal renders with natural spacing inside viewport.
+      const initialLoaderSize = isMobile
+        ? Math.min(w * 0.082, 40)
+        : Math.min(w * 0.11, 200)
       const finalLoaderSize = isMobile ? 18 : 24
       const finalLoaderPos = isMobile ? 12 : 20
 
       // Force explicit font-size so the global `*` rule can't break measurements.
       const loaderEls = [loader, letterN, fillAnak, letterC, fillHahal]
-      loaderEls.forEach((el) => {
-        el.style.fontSize = initialLoaderSize + 'px'
-      })
+      loaderEls.forEach((el) => { el.style.fontSize = initialLoaderSize + 'px' })
 
       // ── Measure natural fill widths ───────────────────────────────
       fillAnak.style.width = 'auto'
@@ -457,28 +458,28 @@ function App() {
       const letterCWidth  = letterC.offsetWidth
 
       // ── Loader animation values (px-based) ────────────────────────
-      // Mobile: starts fully expanded, shrinks to JC.
-      // Desktop: starts as JC, expands to JatinChhanwal.
-      const initialFillAnak  = isMobile ? fillAnakWidth : 0
-      const initialFillHahal = isMobile ? fillHahalWidth : 0
-      const targetFillAnak   = isMobile ? 0 : fillAnakWidth
-      const targetFillHahal  = isMobile ? 0 : fillHahalWidth
+      // Both: start as JC initials at center → expand to full name → shrink to corner.
+      const targetFillAnak   = fillAnakWidth
+      const targetFillHahal  = fillHahalWidth
 
       // Center the WHOLE visible text (not just C) at each phase
       const fullNameWidth   = letterNWidth + fillAnakWidth + letterCWidth + fillHahalWidth
       const initialsWidth   = letterNWidth + letterCWidth
 
+      // Phone reverses direction: starts as full JatinChhanwal centered, contracts
+      // to JC and slides to corner. Desktop keeps JC → expand → shrink to corner.
       const initialLoaderLeft = isMobile
-        ? w * 0.5 - fullNameWidth / 2    // mobile: full name centered at start
-        : w * 0.5 - initialsWidth / 2    // desktop: JC centered at start
+        ? w * 0.5 - fullNameWidth / 2  // mobile: full name centered at start
+        : w * 0.5 - initialsWidth / 2  // desktop: JC centered at start
+      const phase2EndLeft     = isMobile
+        ? w * 0.5 - fullNameWidth / 2  // mobile: stays put through expand step
+        : w * 0.5 - fullNameWidth / 2  // desktop: expands to full name centered
 
-      const phase2EndLeft = isMobile
-        ? w * 0.5 - initialsWidth / 2    // mobile: JC centered at end
-        : w * 0.5 - fullNameWidth / 2    // desktop: full name centered at end
-
-      // Fill widths scaled to the final font-size (desktop only)
-      const fillAnakAtFinal  = (fillAnakWidth  / initialLoaderSize) * finalLoaderSize
-      const fillHahalAtFinal = (fillHahalWidth / initialLoaderSize) * finalLoaderSize
+      // Fill widths at start vs final
+      const initialFillAnak  = isMobile ? fillAnakWidth  : 0
+      const initialFillHahal = isMobile ? fillHahalWidth : 0
+      const fillAnakAtFinal  = isMobile ? 0 : (fillAnakWidth  / initialLoaderSize) * finalLoaderSize
+      const fillHahalAtFinal = isMobile ? 0 : (fillHahalWidth / initialLoaderSize) * finalLoaderSize
 
       // ── Initial states ────────────────────────────────────────────
       gsap.set(loader, {
@@ -508,8 +509,6 @@ function App() {
       }
 
       // ── Rebuild loader as per-letter rolling spans after intro ────
-      // Mobile keeps "JC" (matches the visual it just shrank to);
-      // desktop has the full name in the nav.
       function rebuildNavName() {
         const el = document.getElementById('loader')
         if (!el) return
@@ -521,36 +520,74 @@ function App() {
         gsap.set('.navLetterRoll', { y: '-1em' })
       }
 
-      // ── Master timeline (paused — runs after first user click) ────
+      // ── Master timeline (paused — runs after start screen click) ──
       const tl = gsap.timeline({ paused: true })
 
-      // 1. JC dissolves in slowly after the silence beat (smooth, cinematic)
-      tl.to(loader, { opacity: 1, duration: 2.4, ease: 'power3.out', delay: 0.4 })
-
-      // 2. Name expands
-      tl.to(
-        [fillAnak, fillHahal],
-        {
-          width: (i) => [targetFillAnak, targetFillHahal][i] + 'px',
-          duration: 3.0,
-          ease: 'expo.inOut',
-          delay: 1.4,
-        }
-      )
-      tl.to(
-        loader,
-        { left: phase2EndLeft + 'px', duration: 3.0, ease: 'expo.inOut' },
-        '<'
-      )
-
-      // 3. Hold then exhale: shrink to nav corner
-      tl.to(loaderEls, {
-        fontSize: finalLoaderSize + 'px',
-        duration: 3.4,
-        ease: 'expo.inOut',
-        delay: 2.0,
+      // 1. Loader dissolves in (full name on phone, JC on desktop)
+      tl.to(loader, {
+        opacity: 1,
+        duration: isMobile ? 0.7 : 2.4,
+        ease: 'power3.out',
+        delay: isMobile ? 0.05 : 0.4,
       })
-      if (!isMobile) {
+
+      if (isMobile) {
+        // Compressed for snappy phone load — total ~3.6s before content shows.
+        // 2a. Hold the full name in place
+        tl.to(loader, { duration: 0.6, ease: 'none' })
+
+        // 2b. Contract fills to 0 — JatinChhanwal collapses to JC, still centered
+        tl.to(
+          [fillAnak, fillHahal],
+          { width: 0, duration: 0.9, ease: 'expo.inOut' }
+        )
+        tl.to(
+          loader,
+          { left: w * 0.5 - initialsWidth / 2 + 'px', duration: 0.9, ease: 'expo.inOut' },
+          '<'
+        )
+
+        // 2c. Move up + shrink to nav corner
+        tl.to(loaderEls, {
+          fontSize: finalLoaderSize + 'px',
+          duration: 0.9,
+          ease: 'expo.inOut',
+          delay: 0.15,
+        })
+        tl.to(
+          loader,
+          {
+            top: finalLoaderPos + 'px',
+            left: finalLoaderPos + 'px',
+            yPercent: 0,
+            duration: 0.9,
+            ease: 'expo.inOut',
+          },
+          '<'
+        )
+      } else {
+        // Desktop: JC expands to full name centered, then shrinks to corner
+        tl.to(
+          [fillAnak, fillHahal],
+          {
+            width: (i) => [targetFillAnak, targetFillHahal][i] + 'px',
+            duration: 3.0,
+            ease: 'expo.inOut',
+            delay: 1.4,
+          }
+        )
+        tl.to(
+          loader,
+          { left: phase2EndLeft + 'px', duration: 3.0, ease: 'expo.inOut' },
+          '<'
+        )
+
+        tl.to(loaderEls, {
+          fontSize: finalLoaderSize + 'px',
+          duration: 3.4,
+          ease: 'expo.inOut',
+          delay: 2.0,
+        })
         tl.to(
           [fillAnak, fillHahal],
           {
@@ -560,22 +597,25 @@ function App() {
           },
           '<'
         )
+        tl.to(
+          loader,
+          {
+            top: finalLoaderPos + 'px',
+            left: finalLoaderPos + 'px',
+            yPercent: 0,
+            duration: 3.4,
+            ease: 'expo.inOut',
+          },
+          '<'
+        )
       }
-      tl.to(
-        loader,
-        {
-          top: finalLoaderPos + 'px',
-          left: finalLoaderPos + 'px',
-          yPercent: 0,
-          duration: 3.4,
-          ease: 'expo.inOut',
-        },
-        '<'
-      )
 
-      tl.call(() => rebuildNavName(), null, '>')
+      tl.call(() => {
+        rebuildNavName()
+        document.body.classList.remove('intro')
+      }, null, '>')
 
-      // 4. Page breathes open
+      // 4. Page breathes open. Phone: sequential — content only after JC settles.
       tl.to(
         '#content',
         {
@@ -584,25 +624,13 @@ function App() {
           ease: 'power3.out',
           onStart: () => lenis.start(),
         },
-        '-=2.0'
+        isMobile ? '+=0.2' : '-=2.0'
       )
 
-      // 5. Stagger reveal — gentler stagger, longer durations
-      tl.to(
-        '#details p',
-        { opacity: 1, y: 0, duration: 2.4, stagger: 0.34, ease: 'power3.out' },
-        '-=1.8'
-      )
-      tl.to(
-        '.projectPara',
-        { opacity: 1, y: 0, duration: 2.4, stagger: 0.14, ease: 'power3.out' },
-        '-=2.0'
-      )
-      tl.to(
-        '#connectDiv p',
-        { opacity: 1, y: 0, duration: 2.4, stagger: 0.26, ease: 'power3.out' },
-        '-=1.8'
-      )
+      // 5. Stagger reveal
+      tl.to('#details p',    { opacity: 1, y: 0, duration: 2.4, stagger: 0.34, ease: 'power3.out' }, '-=1.8')
+      tl.to('.projectPara',  { opacity: 1, y: 0, duration: 2.4, stagger: 0.14, ease: 'power3.out' }, '-=2.0')
+      tl.to('#connectDiv p', { opacity: 1, y: 0, duration: 2.4, stagger: 0.26, ease: 'power3.out' }, '-=1.8')
 
       // ── Footer scroll-triggered animations ────────────────────────
       gsap.to('#footerLine', {
@@ -644,6 +672,9 @@ function App() {
         })
       }
 
+      // Timeline fully built — if user already clicked the start screen, kick off now
+      if (startedRef.current) startSequenceRef.current()
+
       // No background cycle — using static palette colors
 
       // ── Cleanup ───────────────────────────────────────────────────
@@ -660,7 +691,7 @@ function App() {
 
   return (
     <div className="dark">
-      {!hasStarted && !IS_MOBILE && (
+      {!hasStarted && (
         <div
           id="startScreen"
           className={closing ? 'closing' : ''}
@@ -676,7 +707,7 @@ function App() {
           </span>
         </div>
       )}
-      {focusActive && !IS_MOBILE && (
+      {focusActive && (
         <>
           <div
             id="focusBackdrop"
@@ -693,8 +724,8 @@ function App() {
         </>
       )}
       {/* Creative press-and-hold photo peek — visible while body.creativePeek is active */}
-      {!IS_MOBILE && <div id="creativePeekBackdrop" aria-hidden="true" />}
-      {!IS_MOBILE && <img id="creativePeek" alt="" aria-hidden="true" draggable="false" />}
+      <div id="creativePeekBackdrop" aria-hidden="true" />
+      <img id="creativePeek" alt="" aria-hidden="true" draggable="false" />
       {!IS_MOBILE && (
         <div id="profilePhoto" role="presentation" aria-hidden="true">
           <video
