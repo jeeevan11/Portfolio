@@ -3,6 +3,34 @@ import './Details.css'
 
 const FILL_COUNT = 8 // /public/creative-fills/1.jpeg … 8.jpeg
 
+// Tiny tonal chime for Creative hover/press — soft sine pluck, distinct from
+// the mechanical click sounds. Cheap WebAudio, no asset.
+let _chimeCtx = null
+let _lastChimeAt = 0
+function playCreativeChime(velocity = 1) {
+  try {
+    if (!_chimeCtx) _chimeCtx = new (window.AudioContext || window.webkitAudioContext)()
+    const ctx = _chimeCtx
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+    const now = ctx.currentTime
+    if (now - _lastChimeAt < 0.06) return // anti-spam
+    _lastChimeAt = now
+    // Pentatonic-ish notes so repeated hovers stay pleasant
+    const notes = [880, 988, 1175, 1318, 1568]
+    const f = notes[Math.floor(Math.random() * notes.length)]
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(f, now)
+    const gain = ctx.createGain()
+    const peak = Math.min(0.06, 0.025 + velocity * 0.02)
+    gain.gain.setValueAtTime(0.0001, now)
+    gain.gain.exponentialRampToValueAtTime(peak, now + 0.012)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32)
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.start(now); osc.stop(now + 0.34)
+  } catch (e) { /* ignore */ }
+}
+
 function Details() {
   const showColor = () => document.body.classList.add('navDetailsHover')
   const hideColor = () => document.body.classList.remove('navDetailsHover')
@@ -28,10 +56,16 @@ function Details() {
     fillRef.current.style.backgroundImage = `url('/creative-fills/${next}.jpeg')`
   }
 
+  const handleCreativeHover = () => {
+    pickRandomFill()
+    playCreativeChime(0.6)
+  }
+
   // Press-and-hold: show the image *currently* filling the stencil at full size.
   // Release / leave the page → vanishes.
   const handleCreativePress = (e) => {
     if (e && e.preventDefault) e.preventDefault()
+    playCreativeChime(1.4)
     const peek = document.getElementById('creativePeek')
     if (peek) {
       const idx = lastFillIndexRef.current > 0 ? lastFillIndexRef.current : 1
@@ -90,7 +124,7 @@ function Details() {
           role="button"
           tabIndex={0}
           aria-label="Press and hold to view"
-          onMouseEnter={pickRandomFill}
+          onMouseEnter={handleCreativeHover}
           onMouseDown={handleCreativePress}
           onTouchStart={handleCreativePress}
           onContextMenu={(e) => e.preventDefault()}

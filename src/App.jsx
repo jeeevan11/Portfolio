@@ -41,15 +41,18 @@ function initMechanicalClicks(lenis) {
 
 gsap.registerPlugin(ScrollTrigger)
 
+// Mobile = no music, no video, no start gate. Pure simple flow.
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
+
 function App() {
   const [quoteIndex, setQuoteIndex] = useState(0)
-  const [soundOn, setSoundOn] = useState(true)
-  const soundOnRef = useRef(true)
+  const [soundOn, setSoundOn] = useState(IS_MOBILE ? false : true)
+  const soundOnRef = useRef(IS_MOBILE ? false : true)
   const ambientAudioRef = useRef(null)
   const ambientVideoRef = useRef(null)
-  const [hasStarted, setHasStarted] = useState(false)
+  const [hasStarted, setHasStarted] = useState(IS_MOBILE)
   const [closing, setClosing] = useState(false)
-  const startedRef = useRef(false)
+  const startedRef = useRef(IS_MOBILE)
   const startSequenceRef = useRef(null)
   const [focusActive, setFocusActive] = useState(false)
   const focusActiveRef = useRef(false)
@@ -61,6 +64,12 @@ function App() {
   const focusUnmountTimerRef = useRef(null)
 
   const enterFocusMode = (onExit, opts = {}) => {
+    if (IS_MOBILE) {
+      // No video / focus mode on mobile — fire onExit immediately so the
+      // start sequence still runs.
+      if (onExit) onExit()
+      return
+    }
     if (focusActiveRef.current) return
     focusActiveRef.current = true
     focusOnExitRef.current = onExit || null
@@ -129,6 +138,7 @@ function App() {
     // NOTE: setFocusActive(false) is deferred until after the silence beat
     // and backdrop fade-out — keeps the backdrop in the DOM throughout.
     const wasCinematic = cinematicRef.current
+    const isQuick = document.body.classList.contains('focusQuick')
     cinematicRef.current = false
     document.body.classList.remove('focusIntro')
     document.body.classList.remove('focusEntering')
@@ -162,42 +172,36 @@ function App() {
 
     if (focusUnmountTimerRef.current) clearTimeout(focusUnmountTimerRef.current)
 
-    // Silence beat: 1.6s of pure black, then site flow returns
+    // Silence beat — long for cinematic, snappy for JC quick exit
+    const silenceMs = isQuick ? 200 : 1600
+    const unmountMs = isQuick ? 250 : 1100
+
     setTimeout(() => {
       document.body.classList.remove('focusMode')
       document.body.classList.remove('focusEnding')
-      // Backdrop now fades out (1.0s CSS transition)
+      document.body.classList.remove('focusQuick')
       if (focusOnExitRef.current) {
         const cb = focusOnExitRef.current
         focusOnExitRef.current = null
         cb()
       }
-      // Wait for backdrop fade to complete before unmounting from DOM
       focusUnmountTimerRef.current = setTimeout(() => {
         setFocusActive(false)
         focusUnmountTimerRef.current = null
-      }, 1100)
-    }, 1600)
+      }, unmountMs)
+    }, silenceMs)
   }
 
+  // JC click → fast open/close, no press-and-hold. focusQuick class
+  // overrides transitions to ~0.2s for snappy in/out.
   const triggerFocusFromClick = () => {
-    if (!startedRef.current || focusActiveRef.current || focusEnteringRef.current) return
-    focusEnteringRef.current = true
-    // Phase 1: highlight the floral stencil + lightly blur the world
+    if (IS_MOBILE) return
+    if (!startedRef.current || focusActiveRef.current) return
+    document.body.classList.add('focusQuick')
     document.body.classList.add('showCreativeFill')
-    document.body.classList.add('focusEntering')
-    // Phase 2 (300ms later): full blur + video reveal
-    setTimeout(() => {
-      focusEnteringRef.current = false
-      document.body.classList.remove('focusEntering')
-      enterFocusMode()
-    }, 300)
+    enterFocusMode()
   }
   const handleNameClick = triggerFocusFromClick
-  const handleCreativeClick = (e) => {
-    if (e && e.stopPropagation) e.stopPropagation()
-    triggerFocusFromClick()
-  }
 
   const handleStart = () => {
     if (startedRef.current) return
@@ -256,6 +260,7 @@ function App() {
   // Critical for iOS Safari: the audio element must exist when the user taps
   // the start screen so we can call .play() synchronously inside the click.
   useEffect(() => {
+    if (IS_MOBILE) return // mobile: no music at all
     const audio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
     audio.loop = true
     audio.preload = 'auto'
@@ -310,7 +315,7 @@ function App() {
       //   • Silent above the fade range
       //   • Within last ~70% viewport-height of scroll: smooth ramp up
       //   • At bottom: holds at a quiet ceiling
-      const BASE_VOL = 0.18         // ceiling — never full, kept restrained
+      const BASE_VOL = 0.10         // ceiling — kept very subtle; mechanical clicks remain prominent
       const FADE_RANGE_MULT = 0.7   // viewport-fraction over which the ramp happens
 
       let targetVol = 0
@@ -655,7 +660,7 @@ function App() {
 
   return (
     <div className="dark">
-      {!hasStarted && (
+      {!hasStarted && !IS_MOBILE && (
         <div
           id="startScreen"
           className={closing ? 'closing' : ''}
@@ -671,7 +676,7 @@ function App() {
           </span>
         </div>
       )}
-      {focusActive && (
+      {focusActive && !IS_MOBILE && (
         <>
           <div
             id="focusBackdrop"
@@ -688,19 +693,22 @@ function App() {
         </>
       )}
       {/* Creative press-and-hold photo peek — visible while body.creativePeek is active */}
-      <div id="creativePeekBackdrop" aria-hidden="true" />
-      <img id="creativePeek" alt="" aria-hidden="true" draggable="false" />
-      <div id="profilePhoto" role="presentation" aria-hidden="true">
-        <video
-          ref={ambientVideoRef}
-          src="/ambient.mp4"
-          muted
-          loop
-          playsInline
-          preload="auto"
-          tabIndex={-1}
-        />
-      </div>
+      {!IS_MOBILE && <div id="creativePeekBackdrop" aria-hidden="true" />}
+      {!IS_MOBILE && <img id="creativePeek" alt="" aria-hidden="true" draggable="false" />}
+      {!IS_MOBILE && (
+        <div id="profilePhoto" role="presentation" aria-hidden="true">
+          <video
+            ref={ambientVideoRef}
+            src="/ambient.mp4"
+            muted
+            loop
+            playsInline
+            preload="auto"
+            tabIndex={-1}
+          />
+        </div>
+      )}
+      {!IS_MOBILE && (
       <button
         id="soundToggle"
         type="button"
@@ -724,9 +732,10 @@ function App() {
           </svg>
         )}
       </button>
+      )}
       <Name onNameClick={handleNameClick} />
       <main id="content">
-        <Scrollable onCreativeClick={handleCreativeClick} />
+        <Scrollable />
         <Footer quote={quotes[quoteIndex]} onLineHover={shuffleQuote} />
       </main>
     </div>

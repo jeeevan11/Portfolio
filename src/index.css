@@ -91,6 +91,26 @@ html, body, * {
   cursor: url('/cursor.svg') 2 2, auto;
 }
 
+/* Touch-action: manipulation eliminates the 300ms tap delay, prevents
+   double-tap zoom, on every interactive surface. Mobile-critical. */
+button,
+[role="button"],
+.creativeWord,
+.headingWord,
+.footerBackTop,
+#loader,
+#footerLine,
+#footerArrow,
+#footerYearText,
+#startScreen,
+#focusBackdrop,
+#soundToggle,
+.projectPara a,
+#connectDiv a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ── Ambient video frame, left empty space ──────────────────── */
 #profilePhoto {
   position: fixed;
@@ -188,6 +208,15 @@ body.focusEnding #profilePhoto {
 }
 body.focusEnding #focusBackdrop {
   background: rgba(0, 0, 0, 1);
+}
+
+/* JC click "quick" mode — snappy open/close transitions (~0.2s) */
+body.focusQuick #focusBackdrop,
+body.focusQuick #profilePhoto,
+body.focusQuick #content,
+body.focusQuick #loader,
+body.focusQuick #soundToggle {
+  transition-duration: 0.22s !important;
 }
 
 body.focusMode #profilePhoto {
@@ -393,10 +422,14 @@ body.started #soundToggle {
 
 @media (max-width: 768px) {
   #soundToggle {
-    top: calc(18px + env(safe-area-inset-top));
-    right: calc(18px + env(safe-area-inset-right));
-    width: 12px;
-    height: 12px;
+    top: calc(20px + env(safe-area-inset-top));
+    right: calc(20px + env(safe-area-inset-right));
+    width: 14px;
+    height: 14px;
+  }
+  /* Larger hit area on touch — 48px minimum recommended */
+  #soundToggle::before {
+    inset: -22px;
   }
 }
 
@@ -468,6 +501,34 @@ body.creativePeek #soundToggle {
     max-width: 88vw;
     max-height: 70vh;
   }
+}
+
+/* ── Synchronized random breath across JC + Independent + Creative Developer
+   Same keyframe, three different periods — they drift in and out of phase
+   so the system reads as alive: random in feel, deliberate in pulse.
+   Initial color stays Starlight; only opacity gently oscillates. */
+@keyframes headingBreath {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.84; }
+}
+
+body.started #loader {
+  animation: headingBreath 7s ease-in-out infinite 12s;
+}
+
+body.started #details p:nth-child(1) {
+  animation: headingBreath 9s ease-in-out infinite 14s;
+}
+
+body.started #details p:nth-child(2) {
+  animation: headingBreath 11s ease-in-out infinite 16s;
+}
+
+/* Pause the breath while a focus mode is active — keeps blurred world quiet */
+body.focusMode #loader,
+body.focusMode #details p:nth-child(1),
+body.focusMode #details p:nth-child(2) {
+  animation-play-state: paused;
 }
 
 /* Quote swap animation — runs on Footer key change */
