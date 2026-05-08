@@ -42,6 +42,7 @@ body.navDetailsHover #details p {
     user-select: none;
 }
 
-.creativeWord:hover .creativeWordFill {
+.creativeWord:hover .creativeWordFill,
+body.showCreativeFill .creativeWordFill {
     opacity: 1;
 }

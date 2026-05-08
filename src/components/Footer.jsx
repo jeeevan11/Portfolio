@@ -24,9 +24,21 @@ function Footer({ quote = DEFAULT_QUOTE, onLineHover }) {
           ))}
         </button>
       </div>
-      <div id="footerLine" onMouseEnter={onLineHover}></div>
+      <div
+        id="footerLine"
+        onMouseEnter={onLineHover}
+        onTouchStart={onLineHover}
+      ></div>
       <div id="footerYear">
-        <div id="footerYearText" key={quote.line1 + quote.line2}>
+        <div
+          id="footerYearText"
+          key={quote.line1 + quote.line2}
+          onClick={onLineHover}
+          role="button"
+          tabIndex={0}
+          aria-label="Shuffle Drake quote"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onLineHover && onLineHover() }}
+        >
           <span>{quote.line1}</span>
           <span>{quote.line2}</span>
           <span id="footerAttrib">— {quote.source}</span>

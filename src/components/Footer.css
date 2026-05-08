@@ -168,16 +168,26 @@
 
 @media (max-width: 768px) {
     #footerDiv {
-        height: 60vh;
+        height: 70vh;
         padding: clamp(32px, 5vw, 56px) 0 0 0;
     }
 
-    #footerLine, #footerTopBar {
-        display: none;
+    #footerTopBar {
+        margin-left: clamp(20px, 5vw, 32px);
+        margin-right: clamp(20px, 5vw, 32px);
+    }
+
+    #footerLine {
+        margin-left: clamp(20px, 5vw, 32px);
+        margin-right: clamp(20px, 5vw, 32px);
     }
 
     #footerYearText,
     #footerArrow {
-        font-size: clamp(52px, 16vw, 130px);
+        font-size: clamp(48px, 13vw, 110px);
+    }
+
+    #footerYearText {
+        cursor: url('/cursor.svg') 2 2, pointer;
     }
 }
