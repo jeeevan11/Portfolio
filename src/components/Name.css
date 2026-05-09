@@ -1,13 +1,15 @@
 #loader {
     position: fixed;
     z-index: 100;
-    top: 50%;
+    top: 0;
+    left: 0;
     background-color: transparent;
     white-space: nowrap;
     opacity: 0;
     line-height: 1;
     letter-spacing: -0.04em;
     color: inherit;
+    transform-origin: left top;
     transition: color 0.4s cubic-bezier(0.25, 0, 0, 1);
 }
 

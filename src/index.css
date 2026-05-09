@@ -392,6 +392,42 @@ body.focusIntro #focusCaption span {
   to { opacity: 0; }
 }
 
+/* ── Skip-intro — anchored low-center, secondary to "click anywhere" ── */
+/* Same family/case/tracking as the prompt above. Lighter weight and
+   smaller size so it reads as quieter, but visually identical otherwise.
+   Appears a beat after the main prompt so the eye lands there first. */
+.startSkip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(56px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 14px 6px;
+  background: transparent;
+  border: none;
+  color: #F0E7C2;
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0;
+  cursor: url('/cursor.svg') 2 2, pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: skipIn 0.9s cubic-bezier(0.25, 0, 0, 1) 1.1s forwards;
+  transition: opacity 0.45s cubic-bezier(0.22, 0.04, 0.16, 1);
+}
+
+.startSkip:hover,
+.startSkip:focus-visible {
+  /* !important wins over the keyframe's final opacity */
+  opacity: 0.7 !important;
+  outline: none;
+}
+
+@keyframes skipIn {
+  to { opacity: 0.35; }
+}
+
 /* ── Sound toggle — minimal play/pause, top right ─────────────── */
 #soundToggle {
   position: fixed;

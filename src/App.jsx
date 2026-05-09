@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
 import Name from './components/Name'
 import Scrollable from './components/Scrollable'
 import Footer from './components/Footer'
+import Grain from './components/Grain'
 import quotes from './components/quotesData'
 
 let _audioCtx = null
@@ -39,7 +41,27 @@ function initMechanicalClicks(lenis) {
   return () => evts.forEach(e => document.removeEventListener(e, unlock))
 }
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, CustomEase)
+
+// ── Liquid motion language ─────────────────────────────────────────────
+// Every animation on this site shares one set of curves so the whole page
+// feels like a single fluid system. Each curve is tuned to a specific
+// quality of liquid motion:
+//   liquid     — viscous flow (slow surface tension at start, smooth glide,
+//                gentle settle). The default ease for everything.
+//   liquidFlow — symmetric inOut, like fluid pouring through a narrow neck.
+//                Use for things that flow continuously in both directions.
+//   liquidPour — heavy decel, like water arriving at a basin and slowing
+//                as it fills. Use for "settles into place" motion.
+//   liquidDrip — slight overshoot, like a droplet hitting and rebounding.
+//                Use for elements that should feel alive when they land.
+CustomEase.create('liquid',     'M0,0 C0.22,0.04 0.16,1 1,1')
+CustomEase.create('liquidFlow', 'M0,0 C0.65,0.02 0.05,0.98 1,1')
+CustomEase.create('liquidPour', 'M0,0 C0.16,0.86 0.18,1 1,1')
+CustomEase.create('liquidDrip', 'M0,0 C0.34,1.18 0.22,0.97 1,1')
+
+// Default ease for every gsap.to/from on the page — one motion language.
+gsap.defaults({ ease: 'liquid', duration: 1.2 })
 
 // No video on phone. Touch-here screen → JC animation → content reveal.
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
@@ -54,6 +76,9 @@ function App() {
   const [closing, setClosing] = useState(false)
   const startedRef = useRef(false)
   const startSequenceRef = useRef(null)
+  // Tracks whether the user hit Skip vs Start — needed when the click
+  // arrives before the timeline-building effect has resolved.
+  const skipRequestedRef = useRef(false)
   const [focusActive, setFocusActive] = useState(false)
   const focusActiveRef = useRef(false)
   const focusOnExitRef = useRef(null)
@@ -219,6 +244,22 @@ function App() {
     setTimeout(() => setHasStarted(true), 600)
   }
 
+  // Skip the cinematic — no video, no captions. The master timeline
+  // still plays so the user sees the Jatin Chhanwal name animation
+  // (loader fades in, expands, parks at the corner, content reveals).
+  // Only the focus-mode video sequence is bypassed.
+  const handleSkip = (e) => {
+    if (e) e.stopPropagation() // don't also trigger the parent's handleStart
+    if (startedRef.current) return
+    startedRef.current = true
+    skipRequestedRef.current = true
+    setClosing(true)
+    // Kick off the master timeline directly — same path enterFocusMode
+    // takes after the video ends, just without the video step.
+    if (startSequenceRef.current) startSequenceRef.current()
+    setTimeout(() => setHasStarted(true), 600)
+  }
+
   const shuffleQuote = () => {
     setQuoteIndex(i => {
       if (quotes.length <= 1) return i
@@ -295,10 +336,17 @@ function App() {
 
     fontsReady.then(() => {
       // ── Smooth scroll (Lenis + GSAP ticker) ───────────────────────
+      // Liquid scroll: longer settling time + viscous quartic ease.
+      // 1 - (1-t)^4.5 decays more gently than the default exponential —
+      // the page keeps drifting briefly after the wheel stops, like
+      // surface tension carrying water past where you stopped pouring.
       const lenis = new Lenis({
-        duration: 2.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        duration: 2.6,
+        easing: (t) => 1 - Math.pow(1 - t, 4.5),
         smoothWheel: true,
+        syncTouch: true,
+        touchInertiaMultiplier: 28,
+        wheelMultiplier: 1.0,
       })
 
       lenis.on('scroll', ScrollTrigger.update)
@@ -374,8 +422,15 @@ function App() {
       let rollActive = false
       let rollDir = 0
       const rollTls = []
+      const settleTls = [] // tracked separately so startRoll can kill them
+
+      function killSettles() {
+        settleTls.forEach(t => t.kill())
+        settleTls.length = 0
+      }
 
       function startRoll(rolls, dir) {
+        killSettles()           // kill any in-progress settle before rolling again
         rollTls.forEach(t => t.kill())
         rollTls.length = 0
         rolls.forEach((roll, i) => {
@@ -385,8 +440,11 @@ function App() {
             duration: 0.3,
             ease: 'none',
             repeat: -1,
-            delay: i * 0.018,
           })
+          // seek() is more reliable than progress() on repeat:-1 tweens.
+          // Phase-offset each letter so they cascade without a start delay
+          // — all letters are live immediately, no race with short flicks.
+          t.seek(i * 0.018)
           rollTls.push(t)
         })
       }
@@ -412,14 +470,18 @@ function App() {
           rollDir    = 0
           rollTls.forEach(t => t.kill())
           rollTls.length = 0
+          // Settle: each letter falls into its rest position with a tiny
+          // overshoot — like a droplet hitting the surface and rebounding.
+          // liquidDrip's curve has an ~18% overshoot then gentle return.
           rolls.forEach((roll, i) => {
-            gsap.to(roll, {
+            const st = gsap.to(roll, {
               y: '-1em',
-              duration: 0.65,
-              ease: 'power3.out',
-              delay: i * 0.018,
+              duration: 0.95,
+              ease: 'liquidDrip',
+              delay: i * 0.024,
               overwrite: 'auto',
             })
+            settleTls.push(st)
           })
         }
       })
@@ -482,9 +544,12 @@ function App() {
       const fillHahalAtFinal = isMobile ? 0 : (fillHahalWidth / initialLoaderSize) * finalLoaderSize
 
       // ── Initial states ────────────────────────────────────────────
+      // All positioning via transform (x/y) — never top/left during animation.
+      // transform-origin: left top (set in CSS) so scale anchors to the corner.
+      const h = window.innerHeight
       gsap.set(loader, {
-        top: '50%',
-        left: initialLoaderLeft + 'px',
+        x: initialLoaderLeft,
+        y: h / 2,
         yPercent: -50,
         opacity: 0,
       })
@@ -501,10 +566,14 @@ function App() {
       gsap.set('#footerMark',  { opacity: 0, y: 10 })
 
       // ── Back-to-top click handler ─────────────────────────────────
+      // Long viscous scroll back to top — like draining water upward.
       const backToTopBtn = document.querySelector('.footerBackTop')
       if (backToTopBtn) {
         backToTopBtn.addEventListener('click', () => {
-          lenis.scrollTo(0, { duration: 2 })
+          lenis.scrollTo(0, {
+            duration: 2.6,
+            easing: (t) => 1 - Math.pow(1 - t, 4.5),
+          })
         })
       }
 
@@ -513,7 +582,10 @@ function App() {
         const el = document.getElementById('loader')
         if (!el) return
         const text = isMobile ? 'JC' : 'JatinChhanwal'
+        // Switch from scale-based sizing back to actual font-size.
+        // Both render identically — no visual flash.
         el.style.fontSize = finalLoaderSize + 'px'
+        gsap.set(el, { scale: 1, x: finalLoaderPos, y: finalLoaderPos, yPercent: 0 })
         el.innerHTML = Array.from(text).map(char =>
           `<span class="navLetterWrap"><span class="navLetterRoll"><span>${char}</span><span>${char}</span><span>${char}</span></span></span>`
         ).join('')
@@ -523,90 +595,81 @@ function App() {
       // ── Master timeline (paused — runs after start screen click) ──
       const tl = gsap.timeline({ paused: true })
 
-      // 1. Loader dissolves in (full name on phone, JC on desktop)
+      // 1. Loader dissolves in — liquid surface rising into view
       tl.to(loader, {
         opacity: 1,
         duration: isMobile ? 0.7 : 2.4,
-        ease: 'power3.out',
+        ease: 'liquid',
         delay: isMobile ? 0.05 : 0.4,
       })
+
+      const scaleRatio = finalLoaderSize / initialLoaderSize
 
       if (isMobile) {
         // Compressed for snappy phone load — total ~3.6s before content shows.
         // 2a. Hold the full name in place
         tl.to(loader, { duration: 0.6, ease: 'none' })
 
-        // 2b. Contract fills to 0 — JatinChhanwal collapses to JC, still centered
+        // 2b. Contract fills to 0 — JatinChhanwal collapses to JC, still centered.
+        // liquidFlow: a symmetric inOut, like fluid retreating through a neck.
         tl.to(
           [fillAnak, fillHahal],
-          { width: 0, duration: 0.9, ease: 'expo.inOut' }
+          { width: 0, duration: 0.9, ease: 'liquidFlow' }
         )
+        // x instead of left — transform, no layout recalc
         tl.to(
           loader,
-          { left: w * 0.5 - initialsWidth / 2 + 'px', duration: 0.9, ease: 'expo.inOut' },
+          { x: w * 0.5 - initialsWidth / 2, duration: 0.9, ease: 'liquidFlow' },
           '<'
         )
 
-        // 2c. Move up + shrink to nav corner
-        tl.to(loaderEls, {
-          fontSize: finalLoaderSize + 'px',
-          duration: 0.9,
-          ease: 'expo.inOut',
-          delay: 0.15,
-        })
+        // 2c. Move to nav corner + scale down. liquidPour eases hard at the end —
+        // like water arriving at a basin and slowing as it fills the corner.
         tl.to(
           loader,
           {
-            top: finalLoaderPos + 'px',
-            left: finalLoaderPos + 'px',
+            x: finalLoaderPos,
+            y: finalLoaderPos,
             yPercent: 0,
+            scale: scaleRatio,
             duration: 0.9,
-            ease: 'expo.inOut',
-          },
-          '<'
+            ease: 'liquidPour',
+            delay: 0.15,
+          }
         )
       } else {
-        // Desktop: JC expands to full name centered, then shrinks to corner
+        // Desktop: JC expands to full name centered, then shrinks to corner.
+        // Both phases use liquidFlow — fluid pouring out, then fluid receding.
         tl.to(
           [fillAnak, fillHahal],
           {
             width: (i) => [targetFillAnak, targetFillHahal][i] + 'px',
             duration: 3.0,
-            ease: 'expo.inOut',
+            ease: 'liquidFlow',
             delay: 1.4,
           }
         )
+        // x instead of left
         tl.to(
           loader,
-          { left: phase2EndLeft + 'px', duration: 3.0, ease: 'expo.inOut' },
+          { x: phase2EndLeft, duration: 3.0, ease: 'liquidFlow' },
           '<'
         )
 
-        tl.to(loaderEls, {
-          fontSize: finalLoaderSize + 'px',
-          duration: 3.4,
-          ease: 'expo.inOut',
-          delay: 2.0,
-        })
-        tl.to(
-          [fillAnak, fillHahal],
-          {
-            width: (i) => [fillAnakAtFinal, fillHahalAtFinal][i] + 'px',
-            duration: 3.4,
-            ease: 'expo.inOut',
-          },
-          '<'
-        )
+        // Shrink to corner: scale replaces fontSize animation, x/y replace top/left.
+        // liquidPour for the heavy decel — the name "settles" into the corner
+        // like fluid finding its lowest point.
         tl.to(
           loader,
           {
-            top: finalLoaderPos + 'px',
-            left: finalLoaderPos + 'px',
+            x: finalLoaderPos,
+            y: finalLoaderPos,
             yPercent: 0,
+            scale: scaleRatio,
             duration: 3.4,
-            ease: 'expo.inOut',
-          },
-          '<'
+            ease: 'liquidPour',
+            delay: 2.0,
+          }
         )
       }
 
@@ -616,27 +679,30 @@ function App() {
       }, null, '>')
 
       // 4. Page breathes open. Phone: sequential — content only after JC settles.
+      // liquid ease: viscous fade, like ink blooming across paper.
       tl.to(
         '#content',
         {
           opacity: 1,
           duration: 2.6,
-          ease: 'power3.out',
+          ease: 'liquid',
           onStart: () => lenis.start(),
         },
         isMobile ? '+=0.2' : '-=2.0'
       )
 
-      // 5. Stagger reveal
-      tl.to('#details p',    { opacity: 1, y: 0, duration: 2.4, stagger: 0.34, ease: 'power3.out' }, '-=1.8')
-      tl.to('.projectPara',  { opacity: 1, y: 0, duration: 2.4, stagger: 0.14, ease: 'power3.out' }, '-=2.0')
-      tl.to('#connectDiv p', { opacity: 1, y: 0, duration: 2.4, stagger: 0.26, ease: 'power3.out' }, '-=1.8')
+      // 5. Stagger reveal — each element rises through fluid, slightly out of phase
+      tl.to('#details p',    { opacity: 1, y: 0, duration: 2.4, stagger: 0.34, ease: 'liquid' }, '-=1.8')
+      tl.to('.projectPara',  { opacity: 1, y: 0, duration: 2.4, stagger: 0.14, ease: 'liquid' }, '-=2.0')
+      tl.to('#connectDiv p', { opacity: 1, y: 0, duration: 2.4, stagger: 0.26, ease: 'liquid' }, '-=1.8')
 
       // ── Footer scroll-triggered animations ────────────────────────
+      // liquidPour: heavy decel — each element "fills" its slot like
+      // water finding the bottom of a basin.
       gsap.to('#footerLine', {
         scaleX: 1,
         duration: 2.2,
-        ease: 'expo.out',
+        ease: 'liquidFlow',
         scrollTrigger: { trigger: '#footerDiv', start: 'top 75%' },
       })
 
@@ -644,7 +710,7 @@ function App() {
         opacity: 1,
         y: 0,
         duration: 1.4,
-        ease: 'expo.out',
+        ease: 'liquidPour',
         scrollTrigger: { trigger: '#footerDiv', start: 'top 80%' },
       })
 
@@ -652,14 +718,14 @@ function App() {
         opacity: 0.65,
         y: 0,
         duration: 1.2,
-        ease: 'expo.out',
+        ease: 'liquidPour',
         scrollTrigger: { trigger: '#footerDiv', start: 'top 80%' },
       })
 
       if (isMobile) {
         tl.to(
           '#footerYear',
-          { opacity: 1, y: 0, duration: 1.8, ease: 'expo.out' },
+          { opacity: 1, y: 0, duration: 1.8, ease: 'liquidPour' },
           '-=0.4'
         )
       } else {
@@ -667,13 +733,18 @@ function App() {
           opacity: 1,
           y: 0,
           duration: 2.0,
-          ease: 'expo.out',
+          ease: 'liquidPour',
           scrollTrigger: { trigger: '#footerDiv', start: 'top center' },
         })
       }
 
-      // Timeline fully built — if user already clicked the start screen, kick off now
-      if (startedRef.current) startSequenceRef.current()
+      // Timeline fully built — if the user clicked Skip before this
+      // effect resolved, kick off the master timeline now. (For Start,
+      // enterFocusMode handles kickoff after the video ends; we don't
+      // call startSequenceRef here in that case.)
+      if (startedRef.current && skipRequestedRef.current) {
+        startSequenceRef.current()
+      }
 
       // No background cycle — using static palette colors
 
@@ -691,6 +762,46 @@ function App() {
 
   return (
     <div className="dark">
+      {/* SVG filter defs — referenced by LiquidCursor (and any element that
+          wants to "melt" into a goo). The Gaussian blur smudges shapes,
+          then the colorMatrix re-thresholds alpha so blurred blobs that
+          overlap merge into one solid mass. Classic CSS goo effect. */}
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}
+      >
+        <defs>
+          <filter id="liquidGoo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 22 -10"
+              result="goo"
+            />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+          {/* Heavier goo for slow, syrupy hover melts */}
+          <filter id="liquidGooHeavy">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 28 -14"
+              result="goo"
+            />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
+      <Grain opacity={0.032} />
       {!hasStarted && (
         <div
           id="startScreen"
@@ -702,9 +813,20 @@ function App() {
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleStart() }}
         >
           <span className="startPromptText">
-            <span className="startPromptMain">press anywhere</span>
-            <span className="startPromptSub">the other side awaits</span>
+            <span className="startPromptMain">click anywhere</span>
           </span>
+          <button
+            type="button"
+            className="startSkip"
+            onClick={handleSkip}
+            onKeyDown={(e) => {
+              // Stop space/enter from also firing the parent's handler
+              if (e.key === 'Enter' || e.key === ' ') e.stopPropagation()
+            }}
+            aria-label="Skip the cinematic and go straight to the portfolio"
+          >
+            skip the cinema
+          </button>
         </div>
       )}
       {focusActive && (
