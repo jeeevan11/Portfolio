@@ -1,8 +1,15 @@
+// Socials shown in the scroll-cycle slot.
+//
+// Same `placeholder: true` convention as projectsData — the entry renders
+// and cycles, but the link doesn't navigate. Only LinkedIn + Instagram
+// are live; the rest are reserved for when you choose to expose them.
+
 const connectData = [
   {
     key: 1,
     name: 'Email',
-    link: 'mailto:connectwithjatin365@gmail.com',
+    link: '#',
+    placeholder: true,
   },
   {
     key: 2,
@@ -12,7 +19,8 @@ const connectData = [
   {
     key: 3,
     name: 'GitHub',
-    link: 'https://github.com/jeeevan11',
+    link: '#',
+    placeholder: true,
   },
   {
     key: 4,
@@ -22,12 +30,14 @@ const connectData = [
   {
     key: 5,
     name: 'Twitter / X',
-    link: 'https://x.com/Jeeevannn11',
+    link: '#',
+    placeholder: true,
   },
   {
     key: 6,
     name: 'Codeforces',
-    link: 'https://codeforces.com/profile/jeeevan11',
+    link: '#',
+    placeholder: true,
   },
 ]
 
