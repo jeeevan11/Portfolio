@@ -738,6 +738,54 @@ function App() {
         })
       }
 
+      // ── Scroll-cycle: pinned slot, items shift up one-by-one ─────
+      // The projects list and the socials list each pin to a fixed screen
+      // position. As the user scrolls, the inner container translates
+      // upward so one item at a time passes through the visible slot —
+      // SG → Nile → PersonaAI → etc — until every item has cycled.
+      // Then the pin releases and normal scroll resumes to the next section.
+      //
+      // distMult controls "scroll pixels per pixel of inner travel":
+      //   2.5 means each item takes ~2.5 × itemHeight of scroll to swap.
+      //   Higher = slower / more deliberate cycling. Lower = snappier.
+      //
+      // pinType: 'transform' plays nicely with Lenis (avoids position:fixed
+      // jank when the smooth scroller is driving the document).
+      function setupScrollCycle(containerSel, innerSel, opts = {}) {
+        const container = document.querySelector(containerSel)
+        const inner     = document.querySelector(innerSel)
+        if (!container || !inner) return
+        const items = inner.children
+        if (items.length < 2) return
+
+        // Defer one frame so any pending layout has settled before measuring
+        requestAnimationFrame(() => {
+          const itemH = items[0].offsetHeight
+          if (itemH <= 0) return
+          container.style.height = itemH + 'px'
+          const totalTravel = (items.length - 1) * itemH
+
+          gsap.to(inner, {
+            y: -totalTravel,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: container,
+              start: opts.start || 'top 28%',
+              end: '+=' + (totalTravel * (opts.distMult || 2.5)),
+              pin: true,
+              pinSpacing: true,
+              pinType: 'transform',
+              scrub: 1,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+            },
+          })
+        })
+      }
+
+      setupScrollCycle('#projectRefs', '.projectsInner', { start: 'top 28%', distMult: 2.5 })
+      setupScrollCycle('#connectDiv',  '.connectInner',  { start: 'top 28%', distMult: 2.5 })
+
       // Timeline fully built — if the user clicked Skip before this
       // effect resolved, kick off the master timeline now. (For Start,
       // enterFocusMode handles kickoff after the video ends; we don't
