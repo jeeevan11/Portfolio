@@ -1,14 +1,5 @@
 #projectRefs{
     margin-top: clamp(100px, 16vw, 240px);
-    /* Scroll-cycle slot: only one item is visible at a time. The exact
-       slot height is set by JS from the first .projectPara's offsetHeight
-       so it matches the rendered line height precisely. */
-    overflow: hidden;
-}
-
-/* The translated container — App.jsx animates this element's y on scroll */
-.projectsInner {
-    will-change: transform;
 }
 
 .projectPara{

@@ -2,12 +2,6 @@
     margin-top: clamp(100px, 16vw, 240px);
     margin-bottom: clamp(100px, 16vw, 240px);
     font-size: clamp(20px, 2.8vw, 40px);
-    /* Scroll-cycle slot — height set by JS from the first <p>'s offsetHeight */
-    overflow: hidden;
-}
-
-.connectInner {
-    will-change: transform;
 }
 
 #connectDiv p{
