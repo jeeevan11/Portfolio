@@ -1,35 +1,28 @@
 import './Projects.css'
 import data from './projectsData.js'
 
-// Projects renders as a vertical stack inside `.projectsInner`. The outer
-// `#projectRefs` is the "slot" — its height is constrained to one item by
-// CSS + JS, and overflow:hidden hides the rest of the stack. App.jsx then
-// pins the slot on scroll and translates `.projectsInner` upward so each
-// project cycles through the slot one at a time.
 function Projects() {
   return (
     <div id="projectRefs">
-      <div className="projectsInner">
-        {data.map((proj) => (
-          <p className="projectPara" key={proj.key}>
-            <a
-              href={proj.link}
-              // Real projects open in a new tab. Placeholders don't have a
-              // real destination, so we skip target=_blank and swallow the
-              // click so href="#" doesn't jump the page to the top.
-              target={proj.placeholder ? undefined : '_blank'}
-              rel={proj.placeholder ? undefined : 'noopener noreferrer'}
-              onClick={proj.placeholder ? (e) => e.preventDefault() : undefined}
-              aria-disabled={proj.placeholder || undefined}
-              className={proj.featured ? 'featuredLink' : ''}
-            >
-              {proj.name}
-              {proj.tags && <span className="projTags">{proj.tags}</span>}
-            </a>
-            <sup className="sup">({proj.year})</sup>
-          </p>
-        ))}
-      </div>
+      {data.map((proj) => (
+        <p className="projectPara" key={proj.key}>
+          <a
+            href={proj.link}
+            // Real projects open in a new tab. Placeholders don't have a
+            // real destination, so we skip target=_blank and swallow the
+            // click so href="#" doesn't jump the page to the top.
+            target={proj.placeholder ? undefined : '_blank'}
+            rel={proj.placeholder ? undefined : 'noopener noreferrer'}
+            onClick={proj.placeholder ? (e) => e.preventDefault() : undefined}
+            aria-disabled={proj.placeholder || undefined}
+            className={proj.featured ? 'featuredLink' : ''}
+          >
+            {proj.name}
+            {proj.tags && <span className="projTags">{proj.tags}</span>}
+          </a>
+          <sup className="sup">({proj.year})</sup>
+        </p>
+      ))}
     </div>
   )
 }
