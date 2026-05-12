@@ -1,3 +1,13 @@
+// Projects shown in the scroll-cycle slot.
+//
+// `placeholder: true` marks a name that's reserved for a future project —
+// the entry still renders + cycles like any other, but clicking it doesn't
+// navigate anywhere (Projects.jsx swallows the click). Swap `link` for a
+// real URL and drop the placeholder flag when the project ships.
+//
+// `featured: true` paints the name in wine on the slot (currently SG).
+// `tags` floats a small caption above the name on hover.
+
 const projectsData = [
   {
     key: 0,
@@ -15,45 +25,52 @@ const projectsData = [
   },
   {
     key: 2,
-    name: 'PersonaAI',
-    link: 'https://persona-ai-zeta.vercel.app/',
+    name: 'Vellum',
+    link: '#',
     year: 2026,
+    placeholder: true,
   },
   {
     key: 3,
-    name: 'LegalSarthi',
-    link: 'https://legal-sarthi.vercel.app/',
+    name: 'Aurora',
+    link: '#',
     year: 2026,
+    placeholder: true,
   },
   {
     key: 4,
-    name: 'NewsGenius',
-    link: 'https://newgenius-frontend.vercel.app/',
+    name: 'Polaris',
+    link: '#',
     year: 2025,
+    placeholder: true,
   },
   {
     key: 5,
-    name: 'Planet Dist',
-    link: 'https://pirobeastie.github.io/Planet-Distance/',
-    year: 2024,
+    name: 'Onyx',
+    link: '#',
+    year: 2025,
+    placeholder: true,
   },
   {
     key: 6,
-    name: 'Spotify C',
-    link: 'https://boisterous-mermaid-5baa81.netlify.app/',
-    year: 2025,
+    name: 'Drift',
+    link: '#',
+    year: 2024,
+    placeholder: true,
   },
   {
     key: 7,
-    name: 'Book Store',
-    link: 'https://pirobeastie.github.io/Book_Recommendation/',
+    name: 'Quill',
+    link: '#',
     year: 2024,
+    placeholder: true,
   },
   {
     key: 8,
-    name: 'Retro CSS',
-    link: 'https://retro-theme-css.vercel.app/',
+    name: 'Tessera',
+    link: '#',
     year: 2024,
+    placeholder: true,
   },
 ]
 
