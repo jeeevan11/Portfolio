@@ -336,16 +336,14 @@ function App() {
 
     fontsReady.then(() => {
       // ── Smooth scroll (Lenis + GSAP ticker) ───────────────────────
-      // Liquid scroll: longer settling time + viscous quartic ease.
-      // 1 - (1-t)^4.5 decays more gently than the default exponential —
-      // the page keeps drifting briefly after the wheel stops, like
-      // surface tension carrying water past where you stopped pouring.
+      // Expo-out easing: starts fast and decays exponentially — the
+      // scroll responds immediately and settles cleanly without a
+      // long drag tail. Duration 1.4s keeps momentum feeling natural
+      // without the page fighting you on stops.
       const lenis = new Lenis({
-        duration: 2.6,
-        easing: (t) => 1 - Math.pow(1 - t, 4.5),
+        duration: 1.4,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        syncTouch: true,
-        touchInertiaMultiplier: 28,
         wheelMultiplier: 1.0,
       })
 
@@ -571,8 +569,8 @@ function App() {
       if (backToTopBtn) {
         backToTopBtn.addEventListener('click', () => {
           lenis.scrollTo(0, {
-            duration: 2.6,
-            easing: (t) => 1 - Math.pow(1 - t, 4.5),
+            duration: 2.0,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
           })
         })
       }
