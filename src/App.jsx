@@ -789,7 +789,25 @@ function App() {
         const pre = new Image(); pre.src = el.getAttribute('data-stamp')
       })
 
-      const onScrollFx = () => { updateSpotlight(); updateStamp() }
+      // The left stamp + its "click me" cue stay hidden over the bare hero and
+      // appear together (body.inBody) once the main content has scrolled in —
+      // so the top shows just the wordmark. Desktop only (no side stamp on
+      // phones); hysteresis keeps it from flickering at the threshold.
+      let inBody = false
+      const updateStampVisibility = () => {
+        if (IS_MOBILE) return
+        const vh = window.innerHeight
+        const y = window.scrollY || window.pageYOffset || 0
+        if (!inBody && y > vh * 0.7) {
+          inBody = true
+          document.body.classList.add('inBody')
+        } else if (inBody && y < vh * 0.45) {
+          inBody = false
+          document.body.classList.remove('inBody')
+        }
+      }
+
+      const onScrollFx = () => { updateSpotlight(); updateStamp(); updateStampVisibility() }
       lenis.on('scroll', onScrollFx)
       window.addEventListener('resize', onScrollFx)
       onScrollFx()                       // set initial brightness + stamp now
