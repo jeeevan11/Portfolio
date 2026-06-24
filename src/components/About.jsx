@@ -2,42 +2,77 @@ import { useState, useEffect } from 'react'
 import { aboutMe, beliefs } from './aboutData.js'
 import './About.css'
 
-// A place name that quietly cycles through its spellings in different scripts,
-// in a unique accent colour. It sits at the end of its line, so it can simply
-// resize to each spelling. The word fades out, swaps while invisible, then
-// fades back in — so two scripts never overlap.
-function RotatingWord({ cities, interval = 2800 }) {
-  const [active, setActive] = useState(0)
-  const [visible, setVisible] = useState(true)
+// Split into grapheme clusters so Devanagari/Kannada/Gurmukhi syllables
+// (base + matra) type out as one unit instead of flashing broken half-letters.
+function graphemes(str) {
+  try {
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      const seg = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+      return Array.from(seg.segment(str), (s) => s.segment)
+    }
+  } catch { /* fall through */ }
+  return Array.from(str)
+}
+
+// A place name typed out like a typewriter — types a spelling, holds, deletes,
+// then types the next script, looping. Sits at the end of its line, so it just
+// resizes as it types; nothing after it ever shifts. A caret blinks alongside.
+function TypewriterWord({ words, startDelay = 0, type = 85, del = 45, hold = 1600, gap = 450 }) {
+  const [text, setText] = useState('')
   useEffect(() => {
-    if (cities.length <= 1) return
     const reduce =
       window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduce) return // hold the first (English) spelling
-    let swap
-    const id = setInterval(() => {
-      setVisible(false)
-      swap = setTimeout(() => {
-        setActive((p) => (p + 1) % cities.length)
-        setVisible(true)
-      }, 400)
-    }, interval)
-    return () => {
-      clearInterval(id)
-      clearTimeout(swap)
+    if (reduce) {
+      setText(words[0]) // no animation — just show the English spelling
+      return
     }
-  }, [cities.length, interval])
+    let wi = 0
+    let ci = 0
+    let phase = 'type'
+    let timer
+    const step = () => {
+      const g = graphemes(words[wi])
+      if (phase === 'type') {
+        ci += 1
+        setText(g.slice(0, ci).join(''))
+        if (ci >= g.length) {
+          phase = 'hold'
+          timer = setTimeout(step, hold)
+        } else {
+          timer = setTimeout(step, type)
+        }
+      } else if (phase === 'hold') {
+        phase = 'del'
+        timer = setTimeout(step, del)
+      } else {
+        ci -= 1
+        setText(g.slice(0, Math.max(0, ci)).join(''))
+        if (ci <= 0) {
+          wi = (wi + 1) % words.length
+          ci = 0
+          phase = 'type'
+          timer = setTimeout(step, gap)
+        } else {
+          timer = setTimeout(step, del)
+        }
+      }
+    }
+    timer = setTimeout(step, startDelay)
+    return () => clearTimeout(timer)
+  }, [words, startDelay, type, del, hold, gap])
 
-  // aria-label gives screen readers the English spelling; rotation is decorative.
+  // role=img + aria-label exposes a stable English spelling; the live typing
+  // is decorative and not announced character-by-character.
   return (
-    <span className="rotWord" aria-label={cities[0]} style={{ opacity: visible ? 1 : 0 }}>
-      {cities[active]}
+    <span className="rotWord" role="img" aria-label={words[0]}>
+      {text}
+      <span className="caret" aria-hidden="true" />
     </span>
   )
 }
 
-const PUNJAB = ['Punjab.', 'ਪੰਜਾਬ.', 'पंजाब.']           // English · Punjabi · Hindi
-const BENGALURU = ['Bengaluru.', 'बेंगलुरु.', 'ಬೆಂಗಳೂರು.'] // English · Hindi · Kannada
+const PUNJAB = ['Punjab', 'ਪੰਜਾਬ', 'पंजाब']           // English · Punjabi · Hindi
+const BENGALURU = ['Bengaluru', 'बेंगलुरु', 'ಬೆಂಗಳೂರು'] // English · Hindi · Kannada
 
 function About() {
   return (
@@ -46,10 +81,10 @@ function About() {
         <p className="sectionLabel">A few things about me</p>
         <ul className="aboutList">
           <li className="aboutItem">
-            Born in <RotatingWord cities={PUNJAB} />
+            Born in <TypewriterWord words={PUNJAB} />
           </li>
           <li className="aboutItem">
-            Based in <RotatingWord cities={BENGALURU} />
+            Based in <TypewriterWord words={BENGALURU} startDelay={1100} />
           </li>
           {aboutMe.map((line, i) => (
             <li className="aboutItem" key={i}>{line}</li>

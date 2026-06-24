@@ -35,15 +35,33 @@
    Its spellings are stacked in one inline-grid cell so the cell is sized to
    the widest and the surrounding line never reflows. A unique accent colour
    sets it apart from the cream around it; the swaps crossfade. */
-/* The rotating city, in the accent colour. It ends its line, so it just
-   resizes to each spelling; the word fades out/in around each swap.
-   font: inherit keeps it at the line's size (else the global * rule would
-   blow it up to display size). */
+/* The typewriter city, in the accent colour. It ends its line, so it simply
+   resizes as it types — nothing after it ever shifts. font: inherit keeps it
+   at the line's size (else the global * rule would blow it up to display size). */
 .rotWord{
     color: var(--highlight);
     font: inherit;
     white-space: nowrap;
-    transition: opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Blinking typewriter caret, in the same accent colour. */
+.caret{
+    display: inline-block;
+    width: 0.07em;
+    height: 1.05em;
+    margin-left: 0.04em;
+    background: currentColor;
+    vertical-align: -0.14em;
+    animation: caretBlink 1s steps(1, end) infinite;
+}
+
+@keyframes caretBlink{
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .caret{ display: none; }
 }
 
 @media (max-width: 768px) {

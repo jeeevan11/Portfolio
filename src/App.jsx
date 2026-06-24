@@ -789,7 +789,24 @@ function App() {
         const pre = new Image(); pre.src = el.getAttribute('data-stamp')
       })
 
-      const onScrollFx = () => { updateSpotlight(); updateStamp() }
+      // The left stamp + its cue stay hidden over the bare hero (the big name)
+      // and appear together (body.inBody) once the body content has scrolled
+      // in. Desktop only (no side stamp on phones); hysteresis avoids flicker.
+      let inBody = false
+      const updateStampVisibility = () => {
+        if (IS_MOBILE) return
+        const vh = window.innerHeight
+        const y = window.scrollY || window.pageYOffset || 0
+        if (!inBody && y > vh * 0.55) {
+          inBody = true
+          document.body.classList.add('inBody')
+        } else if (inBody && y < vh * 0.3) {
+          inBody = false
+          document.body.classList.remove('inBody')
+        }
+      }
+
+      const onScrollFx = () => { updateSpotlight(); updateStamp(); updateStampVisibility() }
       lenis.on('scroll', onScrollFx)
       window.addEventListener('resize', onScrollFx)
       onScrollFx()                       // set initial brightness + stamp now
