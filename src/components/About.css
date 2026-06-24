@@ -35,14 +35,18 @@
    Its spellings are stacked in one inline-grid cell so the cell is sized to
    the widest and the surrounding line never reflows. A unique accent colour
    sets it apart from the cream around it; the swaps crossfade. */
+/* Just the rotating city sits here, in the accent colour. Its constant-width
+   slot keeps the ", India." after it perfectly still. */
 .rotWord{
     display: inline-grid;
+    justify-items: center;   /* centre each spelling in the fixed-width slot */
     align-items: baseline;
+    color: var(--highlight);
     /* Match the surrounding line exactly (size + weight) — the global * rule
        would otherwise blow these spans up to the display size. */
     font: inherit;
     line-height: 1;
-    /* The whole word fades out and back in around each spelling swap. */
+    /* The city fades out and back in around each spelling swap. */
     transition: opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -57,13 +61,6 @@
    never cross-fade over each other. */
 .rotWord > .rotWordItem.on{
     opacity: 1;
-}
-
-/* Only the place name carries the accent; the trailing ", India." / "." stays
-   the cream of the surrounding text. */
-.rotCity{
-    font: inherit; /* else the global * rule blows it up to display size */
-    color: var(--highlight);
 }
 
 @media (max-width: 768px) {
