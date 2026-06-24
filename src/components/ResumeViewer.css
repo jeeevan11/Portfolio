@@ -23,9 +23,9 @@
   transition: opacity 0.4s cubic-bezier(0.25, 0, 0, 1);
 }
 
-/* Desktop: the cue rides with the stamp — both appear once the body content
-   has scrolled in (body.inBody), then it breathes to draw the eye. */
-body.inBody .resumeCue {
+/* Desktop: the cue rides with the stamp — both appear when the intro finishes
+   and the body content shows (body.started:not(.intro)), then it breathes. */
+body.started:not(.intro) .resumeCue {
   animation:
     cueIn 0.9s cubic-bezier(0.25, 0, 0, 1) forwards,
     cuePulse 2.8s ease-in-out 0.9s infinite;

@@ -32,14 +32,12 @@ body.navDetailsHover #loader {
 
 .navLetterWrap {
     display: inline-block;
-    /* Clip the stacked roll copies, but let the current glyph's ascenders/
-       descenders bleed past the 1em slot so the wordmark isn't cut at the top.
-       (overflow: hidden is the fallback where clip-margin isn't supported.) */
     overflow: hidden;
-    overflow: clip;
-    overflow-clip-margin: 0.22em;
-    height: 1em;
-    line-height: 1;
+    /* Taller slot (1.4em) gives the glyph leading so its ascenders aren't cut,
+       while the stacked roll copies (a full 1.4em apart) stay clipped — no
+       ghosted duplicates. The roll step in App.jsx matches this (1.4em). */
+    height: 1.4em;
+    line-height: 1.4;
     vertical-align: top;
 }
 
@@ -51,7 +49,7 @@ body.navDetailsHover #loader {
 
 .navLetterRoll > span {
     display: block;
-    line-height: 1;
+    line-height: 1.4; /* matches the slot height + roll step */
     font-size: inherit;
 }
 

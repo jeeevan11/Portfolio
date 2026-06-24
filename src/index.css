@@ -638,10 +638,10 @@ body.creativePeek .profileStamp { pointer-events: none; }
 
 .stampLayer.stampLayerActive { opacity: 1; }
 
-/* The stamp (and its cue) stay hidden over the bare hero — where the big name
-   sits — and fade in together once the body content has scrolled in.
-   body.inBody is toggled on scroll in App.jsx. */
-body.inBody .profileStamp { opacity: 1; }
+/* The stamp (and its cue) stay hidden during the big-name intro and fade in
+   together the moment the intro finishes and the body content appears
+   (body.intro is removed once the name parks). No scroll dependency. */
+body.started:not(.intro) .profileStamp { opacity: 1; }
 
 /* Recede with the rest of the world during focus mode / creative peek */
 body.focusMode .profileStamp,

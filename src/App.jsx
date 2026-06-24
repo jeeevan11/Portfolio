@@ -473,9 +473,9 @@ function App() {
         rollTls.forEach(t => t.kill())
         rollTls.length = 0
         rolls.forEach((roll, i) => {
-          gsap.set(roll, { y: '-1em' })
+          gsap.set(roll, { y: '-1.4em' })
           const t = gsap.to(roll, {
-            y: dir > 0 ? '-2em' : '0em',
+            y: dir > 0 ? '-2.8em' : '0em',
             duration: 0.3,
             ease: 'none',
             repeat: -1,
@@ -514,7 +514,7 @@ function App() {
           // liquidDrip's curve has an ~18% overshoot then gentle return.
           rolls.forEach((roll, i) => {
             const st = gsap.to(roll, {
-              y: '-1em',
+              y: '-1.4em',
               duration: 0.95,
               ease: 'liquidDrip',
               delay: i * 0.024,
@@ -625,7 +625,7 @@ function App() {
         el.innerHTML = Array.from(text).map(char =>
           `<span class="navLetterWrap"><span class="navLetterRoll"><span>${char}</span><span>${char}</span><span>${char}</span></span></span>`
         ).join('')
-        gsap.set('.navLetterRoll', { y: '-1em' })
+        gsap.set('.navLetterRoll', { y: '-1.4em' })
       }
 
       // ── Master timeline (paused — runs after start screen click) ──
@@ -789,26 +789,24 @@ function App() {
         const pre = new Image(); pre.src = el.getAttribute('data-stamp')
       })
 
-      // The left stamp + its cue stay hidden over the bare hero (the big name)
-      // and appear together (body.inBody) once the body content has scrolled
-      // in. Desktop only (no side stamp on phones); hysteresis avoids flicker.
-      let inBody = false
-      const updateStampVisibility = () => {
-        if (IS_MOBILE) return
-        const vh = window.innerHeight
-        const y = window.scrollY || window.pageYOffset || 0
-        if (!inBody && y > vh * 0.55) {
-          inBody = true
-          document.body.classList.add('inBody')
-        } else if (inBody && y < vh * 0.3) {
-          inBody = false
-          document.body.classList.remove('inBody')
-        }
-      }
-
-      const onScrollFx = () => { updateSpotlight(); updateStamp(); updateStampVisibility() }
+      const onScrollFx = () => { updateSpotlight(); updateStamp() }
       lenis.on('scroll', onScrollFx)
       window.addEventListener('resize', onScrollFx)
+      // Robust fallback: also drive the scroll FX (spotlight, photo scene-swap)
+      // from the NATIVE scroll event. Lenis may not be running on a given visit
+      // (e.g. it never started), in which case its 'scroll' never fires — the
+      // native event always does. rAF-throttled to once per frame.
+      let nativeScrollRaf = 0
+      const onNativeScroll = () => {
+        if (nativeScrollRaf) return
+        nativeScrollRaf = requestAnimationFrame(() => { nativeScrollRaf = 0; onScrollFx() })
+      }
+      window.addEventListener('scroll', onNativeScroll, { passive: true })
+
+      // The left stamp + its cue are revealed by CSS (body.started:not(.intro))
+      // — i.e. the moment the intro finishes and the body content appears, not
+      // during the big-name intro. No scroll dependency, so it's reliable.
+
       onScrollFx()                       // set initial brightness + stamp now
       requestAnimationFrame(onScrollFx)  // and again once laid out
 
@@ -900,6 +898,8 @@ function App() {
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
         window.removeEventListener('resize', onScrollFx)
+        window.removeEventListener('scroll', onNativeScroll)
+        if (nativeScrollRaf) cancelAnimationFrame(nativeScrollRaf)
         window.removeEventListener('touchstart', onTouchTrack)
         window.removeEventListener('touchmove', onTouchTrack)
         window.removeEventListener('touchend', clearTouchLit)
