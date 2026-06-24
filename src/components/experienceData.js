@@ -26,7 +26,7 @@ const experienceData = [
     role: 'Head of Growth & Post-Production',
     company: 'UpSale',
     dates: '2024 to 2025',
-    image: '/work/upsale.jpg',
+    image: '/work/upsale.jpg?v=2',
     desc: 'I started behind the editing desk and walked out owning the growth. Restaurants nobody noticed, suddenly everywhere, five to ten thousand new followers.',
   },
 ]
