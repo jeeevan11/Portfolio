@@ -7,7 +7,7 @@ const connectData = [
     key: 0,
     name: 'Résumé',
     resume: true,
-    image: '/jatin.jpg',
+    image: '/logos/resume.svg',
   },
   {
     key: 1,

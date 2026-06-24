@@ -656,8 +656,8 @@ body.creativePeek .profileStamp {
   left: 50%;
   width: min(82vw, 440px);
   aspect-ratio: 1 / 1;
-  object-fit: cover;
   border-radius: 14px;
+  overflow: hidden;
   transform: translate(-50%, -50%);
   z-index: -1;
   opacity: 0;

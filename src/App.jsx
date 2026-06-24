@@ -54,8 +54,22 @@ registerLiquidEases() // liquid / liquidFlow / liquidPour / liquidDrip — see .
 // Default ease for every gsap.to/from on the page — one motion language.
 gsap.defaults({ ease: 'liquid', duration: 1.2 })
 
-// No video on phone. Touch-here screen → JC animation → content reveal.
+// Phones play the cinematic muted (autoplay-safe); desktop plays it with sound.
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
+
+// Returning visitors skip the cinematic entirely — straight to the fast
+// name-animation + content, no start screen, no video. The flag is set the
+// first time anyone enters (Start or Skip), so the 2nd+ visit is instant.
+const IS_RETURNING = (() => {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem('jc_visited') === '1'
+  } catch {
+    return false
+  }
+})()
+const markVisited = () => {
+  try { localStorage.setItem('jc_visited', '1') } catch { /* private mode — ignore */ }
+}
 
 function App() {
   const [quoteIndex, setQuoteIndex] = useState(0)
@@ -63,7 +77,8 @@ function App() {
   const soundOnRef = useRef(IS_MOBILE ? false : true)
   const ambientAudioRef = useRef(null)
   const ambientVideoRef = useRef(null)
-  const [hasStarted, setHasStarted] = useState(false)
+  // Returning visitors never see the start screen — it's pre-dismissed.
+  const [hasStarted, setHasStarted] = useState(IS_RETURNING)
   const [closing, setClosing] = useState(false)
   const startedRef = useRef(false)
   const startSequenceRef = useRef(null)
@@ -83,12 +98,12 @@ function App() {
   const focusWatchdogRef = useRef(null)
 
   const enterFocusMode = (onExit, opts = {}) => {
-    const video = IS_MOBILE ? null : ambientVideoRef.current
+    const video = ambientVideoRef.current
     if (!video) {
-      // Phone, or no <video> in the DOM: skip the cinematic and run the
-      // animation timeline now. Never commit focus state without a video —
-      // there'd be nothing to fire `ended` and exit, trapping the user behind
-      // the focus backdrop with the timeline never started.
+      // No <video> in the DOM: skip the cinematic and run the animation
+      // timeline now. Never commit focus state without a video — there'd be
+      // nothing to fire `ended` and exit, trapping the user behind the focus
+      // backdrop with the timeline never started.
       if (onExit) onExit()
       return
     }
@@ -121,10 +136,13 @@ function App() {
     }
 
     const playVideoNow = () => {
-      video.muted = false
+      // Phones play muted — muted video autoplays without a user-gesture
+      // restriction, so the cinematic is reliable on iOS/Android. Desktop
+      // plays with the ambient soundtrack.
+      video.muted = IS_MOBILE
       video.loop = false
       try { video.currentTime = 0 } catch { /* not seekable yet */ }
-      video.volume = 1.0
+      video.volume = IS_MOBILE ? 0 : 1.0
       video.play().catch(() => {})
       video.addEventListener('ended', onEnded)
     }
@@ -224,7 +242,7 @@ function App() {
   // JC click → fast open/close, no press-and-hold. focusQuick class
   // overrides transitions to ~0.2s for snappy in/out.
   const triggerFocusFromClick = () => {
-    if (IS_MOBILE) return // no video on phone — JC click does nothing
+    if (IS_MOBILE) return // JC/Creative stamp is desktop-only; phones don't fire this
     if (!startedRef.current || focusActiveRef.current) return
     document.body.classList.add('focusQuick')
     document.body.classList.add('showCreativeFill')
@@ -235,6 +253,7 @@ function App() {
   const handleStart = () => {
     if (startedRef.current) return
     startedRef.current = true
+    markVisited()
     setClosing(true)
     // Cinematic intro: 3-second subtitle hold, then video reveal.
     // Intro animation + music start AFTER video ends (or user skips).
@@ -256,6 +275,7 @@ function App() {
     if (e) e.stopPropagation() // don't also trigger the parent's handleStart
     if (startedRef.current) return
     startedRef.current = true
+    markVisited()
     skipRequestedRef.current = true
     setClosing(true)
     // Kick off the master timeline directly — same path enterFocusMode
@@ -263,6 +283,18 @@ function App() {
     if (startSequenceRef.current) startSequenceRef.current()
     setTimeout(() => setHasStarted(true), 600)
   }
+
+  // Returning visitor: bypass the start screen + cinematic on mount and run the
+  // same fast path Skip uses (name animation → content, no video). If the master
+  // timeline isn't built yet, the build effect self-kicks once it is, because it
+  // sees startedRef + skipRequestedRef already set.
+  useEffect(() => {
+    if (!IS_RETURNING) return
+    startedRef.current = true
+    skipRequestedRef.current = true
+    markVisited()
+    if (startSequenceRef.current) startSequenceRef.current()
+  }, [])
 
   const shuffleQuote = () => {
     setQuoteIndex(i => {
@@ -709,7 +741,7 @@ function App() {
         els.forEach((el) => {
           const r = el.getBoundingClientRect()
           const d = Math.min(1, Math.abs(r.top + r.height / 2 - center) / reach)
-          el.style.opacity = String(Math.max(0.66, 0.97 - d * d * 0.31))
+          el.style.opacity = String(Math.max(0.16, 0.95 - d * d * 0.79))
         })
       }
 
@@ -801,6 +833,36 @@ function App() {
       lenis.on('scroll', bumpIdle)
       bumpIdle()
 
+      // ── Touch affordance: light a link's underline while a finger is over
+      // it, even mid-scroll. Touch devices have no :hover, so links read as
+      // inert otherwise. Hit-test under the finger, rAF-throttled. ──────────
+      const LINK_SEL = '#projectRefs a, a.expCompany, #connectDiv a, #connectDiv .connectAction'
+      let touchLit = null
+      let touchRaf = 0
+      const litUnderTouch = (x, y) => {
+        const el = document.elementFromPoint(x, y)
+        const link = el && el.closest ? el.closest(LINK_SEL) : null
+        if (link === touchLit) return
+        if (touchLit) touchLit.classList.remove('touchLit')
+        touchLit = link
+        if (touchLit) touchLit.classList.add('touchLit')
+      }
+      const onTouchTrack = (e) => {
+        const t = e.touches && e.touches[0]
+        if (!t) return
+        const x = t.clientX, y = t.clientY
+        if (touchRaf) cancelAnimationFrame(touchRaf)
+        touchRaf = requestAnimationFrame(() => { touchRaf = 0; litUnderTouch(x, y) })
+      }
+      const clearTouchLit = () => {
+        if (touchRaf) { cancelAnimationFrame(touchRaf); touchRaf = 0 }
+        if (touchLit) { touchLit.classList.remove('touchLit'); touchLit = null }
+      }
+      window.addEventListener('touchstart', onTouchTrack, { passive: true })
+      window.addEventListener('touchmove', onTouchTrack, { passive: true })
+      window.addEventListener('touchend', clearTouchLit, { passive: true })
+      window.addEventListener('touchcancel', clearTouchLit, { passive: true })
+
       // ── Footer scroll-triggered animations ────────────────────────
       // liquidPour: heavy decel — each element "fills" its slot like
       // water finding the bottom of a basin.
@@ -861,6 +923,11 @@ function App() {
         window.removeEventListener('resize', onScrollFx)
         window.removeEventListener('mousemove', bumpIdle)
         window.removeEventListener('pointerdown', bumpIdle)
+        window.removeEventListener('touchstart', onTouchTrack)
+        window.removeEventListener('touchmove', onTouchTrack)
+        window.removeEventListener('touchend', clearTouchLit)
+        window.removeEventListener('touchcancel', clearTouchLit)
+        clearTouchLit()
         if (idleTimer) clearTimeout(idleTimer)
         if (rotateTimer) clearInterval(rotateTimer)
         gsap.ticker.remove(rafFn)
@@ -958,19 +1025,19 @@ function App() {
       {/* Creative press-and-hold photo peek — visible while body.creativePeek is active */}
       <div id="creativePeekBackdrop" aria-hidden="true" />
       <img id="creativePeek" alt="" aria-hidden="true" draggable="false" />
-      {!IS_MOBILE && (
-        <div id="profilePhoto" role="presentation" aria-hidden="true">
-          <video
-            ref={ambientVideoRef}
-            src="/ambient.mp4"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            tabIndex={-1}
-          />
-        </div>
-      )}
+      {/* Cinematic video — desktop and mobile both use it (phones play it
+          muted, which autoplays freely). Hidden by CSS except in focus mode. */}
+      <div id="profilePhoto" role="presentation" aria-hidden="true">
+        <video
+          ref={ambientVideoRef}
+          src="/ambient.mp4"
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          tabIndex={-1}
+        />
+      </div>
       {/* Portrait stamp — pinned left on desktop; the image crossfades to match
           whichever section is level with it. Two layers so the swap dissolves. */}
       {!IS_MOBILE && (
@@ -998,17 +1065,21 @@ function App() {
           <img className="stampLayer" src="/jatin.jpg" alt="" draggable="false" decoding="async" />
         </div>
       )}
-      {/* Phones: the photo becomes a faint, centred background behind the content */}
+      {/* Phones: faint centred photo behind the content. Two layers so it
+          crossfades section-to-section and rotates on idle, just like the
+          desktop stamp — the swap logic targets any .stampLayer pair. */}
       {IS_MOBILE && (
-        <img
-          className="profileBg"
-          src="/jatin.jpg"
-          alt=""
-          aria-hidden="true"
-          draggable="false"
-          decoding="async"
-          onError={(e) => { e.currentTarget.style.display = 'none' }}
-        />
+        <div className="profileBg" aria-hidden="true">
+          <img
+            className="stampLayer stampLayerActive"
+            src="/jatin.jpg"
+            alt=""
+            draggable="false"
+            decoding="async"
+            onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }}
+          />
+          <img className="stampLayer" src="/jatin.jpg" alt="" draggable="false" decoding="async" />
+        </div>
       )}
       {!IS_MOBILE && (
       <button

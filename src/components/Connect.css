@@ -48,7 +48,9 @@
 }
 
 #connectDiv a:hover::after,
-#connectDiv .connectAction:hover::after{
+#connectDiv .connectAction:hover::after,
+#connectDiv a.touchLit::after,
+#connectDiv .connectAction.touchLit::after{
     transform: scaleX(1);
     transform-origin: left center;
 }

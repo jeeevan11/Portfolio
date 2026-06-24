@@ -52,7 +52,8 @@ a.expCompany.featuredExp:hover{
     color: #F0E7C2;
 }
 
-a.expCompany:hover::after{
+a.expCompany:hover::after,
+a.expCompany.touchLit::after{
     transform: scaleX(1);
     transform-origin: left center;
 }
@@ -81,7 +82,7 @@ a.expCompany:hover::after{
     letter-spacing: -0.01em;
     line-height: 1.45;
     color: #F0E7C2;
-    opacity: 0.9;
+    opacity: 0.66;
     margin-top: 0.7em;
     max-width: 48ch;
     text-wrap: pretty;

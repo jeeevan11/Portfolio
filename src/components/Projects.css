@@ -19,6 +19,8 @@
 }
 
 .projName{
+    /* Match the Experience company-name heading so the two sections align */
+    font-size: clamp(28px, 4.4vw, 64px) !important;
     line-height: 1.04;
     white-space: nowrap;
 }
@@ -60,7 +62,8 @@
     color: #F0E7C2;
 }
 
-#projectRefs a:hover::after{
+#projectRefs a:hover::after,
+#projectRefs a.touchLit::after{
     transform: scaleX(1);
     transform-origin: left center;
 }
@@ -92,7 +95,7 @@
     letter-spacing: -0.01em;
     line-height: 1.45;
     color: #F0E7C2;
-    opacity: 0.9;
+    opacity: 0.66;
     margin-top: 0.7em;
     max-width: 46ch;
     text-wrap: pretty;
