@@ -3,10 +3,9 @@ import { aboutMe, beliefs } from './aboutData.js'
 import './About.css'
 
 // A place name that quietly cycles through its spellings in different scripts,
-// in a unique accent colour. All spellings are stacked in one inline-grid cell
-// sized to the widest, so the cell's width is constant — the text after it
-// (", India.") never moves. The city fades out, swaps while invisible, then
-// fades back in, so two scripts never overlap.
+// in a unique accent colour. It sits at the end of its line, so it can simply
+// resize to each spelling. The word fades out, swaps while invisible, then
+// fades back in — so two scripts never overlap.
 function RotatingWord({ cities, interval = 2800 }) {
   const [active, setActive] = useState(0)
   const [visible, setVisible] = useState(true)
@@ -29,20 +28,16 @@ function RotatingWord({ cities, interval = 2800 }) {
     }
   }, [cities.length, interval])
 
+  // aria-label gives screen readers the English spelling; rotation is decorative.
   return (
-    // Screen readers get the English spelling once; the rotation is decorative.
     <span className="rotWord" aria-label={cities[0]} style={{ opacity: visible ? 1 : 0 }}>
-      {cities.map((c, i) => (
-        <span key={i} aria-hidden="true" className={i === active ? 'rotWordItem on' : 'rotWordItem'}>
-          {c}
-        </span>
-      ))}
+      {cities[active]}
     </span>
   )
 }
 
-const PUNJAB = ['Punjab', 'ਪੰਜਾਬ', 'पंजाब']           // English · Punjabi · Hindi
-const BENGALURU = ['Bengaluru', 'बेंगलुरु', 'ಬೆಂಗಳೂರು'] // English · Hindi · Kannada
+const PUNJAB = ['Punjab.', 'ਪੰਜਾਬ.', 'पंजाब.']           // English · Punjabi · Hindi
+const BENGALURU = ['Bengaluru.', 'बेंगलुरु.', 'ಬೆಂಗಳೂರು.'] // English · Hindi · Kannada
 
 function About() {
   return (
@@ -51,10 +46,10 @@ function About() {
         <p className="sectionLabel">A few things about me</p>
         <ul className="aboutList">
           <li className="aboutItem">
-            Born in <RotatingWord cities={PUNJAB} />, India.
+            Born in <RotatingWord cities={PUNJAB} />
           </li>
           <li className="aboutItem">
-            Based in <RotatingWord cities={BENGALURU} />, India.
+            Based in <RotatingWord cities={BENGALURU} />
           </li>
           {aboutMe.map((line, i) => (
             <li className="aboutItem" key={i}>{line}</li>
