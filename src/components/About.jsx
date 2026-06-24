@@ -8,10 +8,8 @@ function About() {
         <p className="sectionLabel">A few things about me</p>
         <ul className="aboutList">
           <li className="aboutItem">
-            Born in <span className="cityAccent">Punjab</span>.
-          </li>
-          <li className="aboutItem">
-            Based in <span className="cityAccent">Bengaluru</span>.
+            Born in <span className="cityAccent">Punjab</span>. Based in{' '}
+            <span className="cityAccent">Bengaluru</span>.
           </li>
           {aboutMe.map((line, i) => (
             <li className="aboutItem" key={i}>{line}</li>

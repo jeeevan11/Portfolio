@@ -473,9 +473,9 @@ function App() {
         rollTls.forEach(t => t.kill())
         rollTls.length = 0
         rolls.forEach((roll, i) => {
-          gsap.set(roll, { y: '-1.4em' })
+          gsap.set(roll, { y: '-1em' })
           const t = gsap.to(roll, {
-            y: dir > 0 ? '-2.8em' : '0em',
+            y: dir > 0 ? '-2em' : '0em',
             duration: 0.3,
             ease: 'none',
             repeat: -1,
@@ -514,7 +514,7 @@ function App() {
           // liquidDrip's curve has an ~18% overshoot then gentle return.
           rolls.forEach((roll, i) => {
             const st = gsap.to(roll, {
-              y: '-1.4em',
+              y: '-1em',
               duration: 0.95,
               ease: 'liquidDrip',
               delay: i * 0.024,
@@ -625,7 +625,7 @@ function App() {
         el.innerHTML = Array.from(text).map(char =>
           `<span class="navLetterWrap"><span class="navLetterRoll"><span>${char}</span><span>${char}</span><span>${char}</span></span></span>`
         ).join('')
-        gsap.set('.navLetterRoll', { y: '-1.4em' })
+        gsap.set('.navLetterRoll', { y: '-1em' })
       }
 
       // ── Master timeline (paused — runs after start screen click) ──
