@@ -23,12 +23,12 @@
   transition: opacity 0.4s cubic-bezier(0.25, 0, 0, 1);
 }
 
-/* Desktop: the cue rides with the stamp — both appear only once the main
-   content has scrolled in (body.inBody), then it breathes to draw the eye. */
-body.inBody .resumeCue {
+/* Fades in just after the stamp parks (post-intro), then breathes to draw the
+   eye. Stays visible — hidden only during the "Jatin Chhanwal" intro. */
+body.started .resumeCue {
   animation:
-    cueIn 0.9s cubic-bezier(0.25, 0, 0, 1) forwards,
-    cuePulse 2.8s ease-in-out 0.9s infinite;
+    cueIn 0.9s cubic-bezier(0.25, 0, 0, 1) 5.4s forwards,
+    cuePulse 2.8s ease-in-out 6.3s infinite;
 }
 
 .resumeCue:hover { opacity: 0.95 !important; }
@@ -56,14 +56,6 @@ body.creativePeek .resumeCue {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: 999px;
-  }
-
-  /* Phones aren't gated on scroll (there's no side stamp to pair with) — the
-     bottom-pill cue fades in shortly after the intro and stays. */
-  body.started .resumeCue {
-    animation:
-      cueIn 0.9s cubic-bezier(0.25, 0, 0, 1) 5.4s forwards,
-      cuePulse 2.8s ease-in-out 6.3s infinite;
   }
 }
 
