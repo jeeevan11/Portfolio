@@ -2,7 +2,8 @@
 // beliefs from how he actually works. All editable.
 
 export const aboutMe = [
-  'Based in Bengaluru, India.',
+  // "Born in Punjab" + "Based in Bengaluru, India" are rendered in About.jsx
+  // with the rotating multilingual word, so they're not listed here.
   'Studying Computer Science at BITS Pilani.',
   'Self-taught. Nobody handed me any of it.',
   'Founding member and engineer at Social Gravity AI.',

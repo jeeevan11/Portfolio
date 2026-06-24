@@ -31,6 +31,31 @@
     margin-top: 0;
 }
 
+/* ── Rotating multilingual word (Bengaluru, Punjab) ─────────────────────
+   Its spellings are stacked in one inline-grid cell so the cell is sized to
+   the widest and the surrounding line never reflows. A unique accent colour
+   sets it apart from the cream around it; the swaps crossfade. */
+.rotWord{
+    display: inline-grid;
+    align-items: baseline;
+    color: var(--highlight);
+    font-weight: 700;
+    /* Keep the taller Devanagari/Kannada/Gurmukhi spellings from inflating the
+       line's vertical rhythm. */
+    line-height: 1;
+}
+
+.rotWord > .rotWordItem{
+    grid-area: 1 / 1;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.rotWord > .rotWordItem.on{
+    opacity: 1;
+}
+
 @media (max-width: 768px) {
     #aboutDiv{
         display: flex;
