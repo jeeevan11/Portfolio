@@ -9,7 +9,7 @@ const experienceData = [
     link: 'https://socialgravity.ai/',
     dates: '2025 to Present',
     featured: true,
-    image: '/work/social-gravity.jpg',
+    image: '/work/social-gravity.jpg?v=2',
     desc: 'Call an AI version of a real person and talk to it out loud, like ringing a friend. I own the twin that lives on any website, and the feel of the whole thing. The first hello used to take five seconds, long enough to feel ignored. Now it lands in under one.',
   },
   {
@@ -18,7 +18,7 @@ const experienceData = [
     company: 'Findable',
     link: 'https://findable-app-beige.vercel.app/',
     dates: '2026',
-    image: '/work/findable.jpg',
+    image: '/work/findable.jpg?v=2',
     desc: 'Most businesses are invisible to ChatGPT. My job is to make them the answer it gives. For a German shop the AI had never heard of, I found 49 fixes and drew the whole way back.',
   },
   {

@@ -19,7 +19,7 @@ const projectsData = [
     link: 'https://huggingface.co/spaces/testingaccc/conflict-arbitration-env',
     tag: 'Meta × PyTorch · Top 100 of 35,000',
     desc: 'Two AI agents write code at once and quietly disagree, until it all breaks at the merge. This catches the fight before it starts. 87.5% right, against 33% for a coin flip.',
-    image: '/work/the-referee.jpg',
+    image: '/work/the-referee.jpg?v=2',
   },
   {
     key: 2,
@@ -27,7 +27,7 @@ const projectsData = [
     link: 'https://huggingface.co/spaces/testingaccc/hospital-ed',
     tag: 'Meta × PyTorch · Top 100 of 35,000',
     desc: 'One open bed. Three people who need it. An AI that keeps its head and chooses, beating the rules a human wrote by hand, 78.85 to 68.43.',
-    image: '/work/hospital-helper.jpg',
+    image: '/work/hospital-helper.jpg?v=2',
   },
   {
     key: 3,
@@ -62,7 +62,7 @@ const projectsData = [
     link: 'https://github.com/jeeevan11',
     tag: 'React · GSAP · WebGL',
     desc: 'This page. Built by hand in React and GSAP, down to the grain in the light and the sound under your cursor.',
-    image: '/work/folio25.jpg',
+    image: '/work/folio25.jpg?v=2',
   },
 ]
 
