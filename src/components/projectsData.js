@@ -11,7 +11,7 @@ const projectsData = [
     tag: 'Live · ~74k LOC Python · 1,061 tests',
     desc: 'My phone never stops buzzing. Steward reads every email and WhatsApp, clears the noise, and wakes me only for the two that matter. 4,900 sorted, 95 ever sent.',
     featured: true,
-    image: '/work/steward.jpg',
+    image: '/work/steward.jpg?v=2',
   },
   {
     key: 1,
