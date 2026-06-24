@@ -789,7 +789,21 @@ function App() {
         const pre = new Image(); pre.src = el.getAttribute('data-stamp')
       })
 
-      const onScrollFx = () => { updateSpotlight(); updateStamp() }
+      // ── Stamp visibility — hidden over the hero (where the name sits), fades
+      // in as the body content scrolls up so it never crowds the wordmark.
+      // Scroll-driven, so it tracks both directions (gone again at the top). ──
+      const stampEl = document.querySelector('.profileStamp')
+      const updateStampVisibility = () => {
+        if (!stampEl) return
+        const vh = window.innerHeight
+        const y = window.scrollY || window.pageYOffset || 0
+        const start = vh * 0.5   // still fully hidden across the hero
+        const end = vh * 0.95    // fully shown once a screenful has scrolled by
+        const v = Math.max(0, Math.min(1, (y - start) / (end - start)))
+        stampEl.style.opacity = String(v)
+      }
+
+      const onScrollFx = () => { updateSpotlight(); updateStamp(); updateStampVisibility() }
       lenis.on('scroll', onScrollFx)
       window.addEventListener('resize', onScrollFx)
       onScrollFx()                       // set initial brightness + stamp now
