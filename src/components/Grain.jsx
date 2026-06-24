@@ -65,18 +65,24 @@ export default function Grain({ opacity = 0.032 }) {
     const uTime = gl.getUniformLocation(prog, 'u_time')
     const uRes  = gl.getUniformLocation(prog, 'u_res')
 
+    const draw = (t) => {
+      gl.uniform1f(uTime, t)
+      gl.drawArrays(gl.TRIANGLES, 0, 6)
+    }
+
     function resize() {
       const dpr = Math.min(window.devicePixelRatio, 2)
       canvas.width  = window.innerWidth  * dpr
       canvas.height = window.innerHeight * dpr
       gl.viewport(0, 0, canvas.width, canvas.height)
       gl.uniform2f(uRes, canvas.width, canvas.height)
+      draw(0) // redraw so the grain survives a resize even when paused
     }
     resize()
     window.addEventListener('resize', resize)
 
     // Render at ~20fps — grain doesn't need 60fps, saves GPU budget
-    let frame
+    let frame = null
     let last = 0
     const INTERVAL = 50 // ms
 
@@ -84,13 +90,23 @@ export default function Grain({ opacity = 0.032 }) {
       frame = requestAnimationFrame(tick)
       if (now - last < INTERVAL) return
       last = now
-      gl.uniform1f(uTime, now * 0.001)
-      gl.drawArrays(gl.TRIANGLES, 0, 6)
+      draw(now * 0.001)
     }
-    frame = requestAnimationFrame(tick)
+
+    const start = () => { if (frame === null) { last = 0; frame = requestAnimationFrame(tick) } }
+    const stop  = () => { if (frame !== null) { cancelAnimationFrame(frame); frame = null } }
+
+    // Reduced motion: keep one static grain frame, never run the loop.
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // Don't animate while the tab is hidden — saves battery/GPU and keeps INP clean.
+    const onVisibility = () => { if (document.hidden) stop(); else if (!reduced) start() }
+
+    if (!reduced) start()
+    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
-      cancelAnimationFrame(frame)
+      stop()
+      document.removeEventListener('visibilitychange', onVisibility)
       window.removeEventListener('resize', resize)
       gl.deleteProgram(prog)
       gl.deleteBuffer(buf)

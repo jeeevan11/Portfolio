@@ -1,3 +1,9 @@
+:root {
+  /* Highlight accent — Social Gravity, featured project, recognitions.
+     Findable brick-red. Tweak this one value to recolor every highlight. */
+  --highlight: #A8432E;
+}
+
 html {
   margin: 0;
   padding: 0;
@@ -37,7 +43,8 @@ img, svg, video {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  #content, #details p, .projectPara, #connectDiv p,
+  #content, #details p, .sectionLabel, .aboutItem,
+  .expItem, .projectPara, .skillRow, .recogItem, #connectDiv p,
   #footerYear, #footerMark, .footerBackTop, #profilePhoto {
     opacity: 1 !important;
   }
@@ -64,7 +71,12 @@ body.intro .footerBackTop {
   pointer-events: none;
 }
 #details p,
+.sectionLabel,
+.aboutItem,
+.expItem,
 .projectPara,
+.skillRow,
+.recogItem,
 #connectDiv p,
 #footerYear,
 #footerMark,
@@ -85,15 +97,6 @@ body.intro .footerBackTop {
   box-sizing: border-box;
 }
 
-.light{
-  color: #00291C;
-  background-color: #F0E7C2;
-}
-
-.light a{
-  color: #00291C;
-}
-
 .dark{
   color: #F0E7C2;
   background-color: transparent;
@@ -101,6 +104,13 @@ body.intro .footerBackTop {
 
 .dark a{
   color: #F0E7C2;
+}
+
+/* ── Keyboard focus — a visible ring on every interactive control ────── */
+:where(a, button, [role="button"], [tabindex="0"], input, select, textarea):focus-visible {
+  outline: 2px solid #F0E7C2;
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar{
@@ -369,16 +379,6 @@ body.focusIntro #focusCaption span {
   text-transform: uppercase;
 }
 
-.startPromptSub {
-  color: #F0E7C2;
-  font-family: "Kumbh Sans", sans-serif;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.55;
-}
-
 @keyframes promptIn {
   to { opacity: 0.85; }
 }
@@ -420,12 +420,11 @@ body.focusIntro #focusCaption span {
 .startSkip:hover,
 .startSkip:focus-visible {
   /* !important wins over the keyframe's final opacity */
-  opacity: 0.7 !important;
-  outline: none;
+  opacity: 0.85 !important;
 }
 
 @keyframes skipIn {
-  to { opacity: 0.35; }
+  to { opacity: 0.55; }
 }
 
 /* ── Sound toggle — minimal play/pause, top right ─────────────── */
@@ -596,4 +595,79 @@ body.focusMode #details p:nth-child(2) {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Portrait stamp — fixed left, crossfades to match the section level with it ── */
+.profileStamp {
+  position: fixed;
+  left: clamp(28px, 6vw, 96px);
+  top: 50%;
+  /* Expanded (resting) size. Shrinks to .compact while scrolling. */
+  width: clamp(156px, 17vw, 248px);
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  transform: translateY(-50%) rotate(-3deg);
+  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.55);
+  outline: 1px solid rgba(240, 231, 194, 0.12);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: auto;
+  cursor: url('/cursor.svg') 2 2, pointer;
+  user-select: none;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.profileStamp:hover { transform: translateY(-50%) rotate(-3deg) scale(1.025); }
+
+body.focusMode .profileStamp,
+body.creativePeek .profileStamp { pointer-events: none; }
+
+/* Two stacked layers; the swap crossfades between them */
+.stampLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  -webkit-user-drag: none;
+  transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.stampLayer.stampLayerActive { opacity: 1; }
+
+/* Fades in once the name parks at the corner (matches toggle timing) */
+body.started .profileStamp {
+  animation: stampIn 1.4s cubic-bezier(0.25, 0, 0, 1) 5s forwards;
+}
+
+@keyframes stampIn { to { opacity: 1; } }
+
+/* Recede with the rest of the world during focus mode / creative peek */
+body.focusMode .profileStamp,
+body.creativePeek .profileStamp {
+  opacity: 0 !important;
+}
+
+/* ── Phones: faint centred portrait behind the content ─────────────────── */
+.profileBg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(82vw, 440px);
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 14px;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+body.started .profileBg {
+  animation: bgIn 1.6s cubic-bezier(0.25, 0, 0, 1) 4.6s forwards;
+}
+
+@keyframes bgIn { to { opacity: 0.18; } }
 

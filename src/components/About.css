@@ -1,0 +1,44 @@
+#aboutDiv{
+    margin-top: clamp(128px, 17vw, 256px);
+}
+
+/* ── The two lists, plain lines (no bullets), Nat style ─────────────── */
+.aboutCol{
+    margin-bottom: clamp(72px, 9vw, 128px);
+}
+
+.aboutList{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Lines are dim by default; the scroll spotlight (App.jsx) brightens each one
+   as it nears the centre of the screen and darkens it as it leaves. */
+.aboutItem{
+    font-size: clamp(17px, 2vw, 27px) !important;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.4;
+    color: #F0E7C2;
+    max-width: 33ch;
+    margin-top: 1.05em;
+    text-wrap: pretty;
+    will-change: opacity;
+}
+
+.aboutItem:first-child{
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    #aboutDiv{
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        text-align: right;
+    }
+    .aboutItem{
+        max-width: none;
+    }
+}

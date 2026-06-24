@@ -8,6 +8,25 @@
     transition: color 0.4s cubic-bezier(0.25, 0, 0, 1);
 }
 
+/* Positioning line under the big heading — body scale, not display scale */
+#details p.detailsIntro {
+    font-size: clamp(15px, 1.6vw, 20px) !important;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.5;
+    opacity: 0.66;
+    max-width: 44ch;
+    margin-top: clamp(20px, 2.4vw, 34px);
+    text-wrap: pretty;
+}
+
+@media (max-width: 768px) {
+    #details p.detailsIntro {
+        max-width: none;
+        margin-left: auto;
+    }
+}
+
 body.navDetailsHover #details p {
     color: #954130;
 }

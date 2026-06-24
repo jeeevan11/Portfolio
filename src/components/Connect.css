@@ -1,6 +1,6 @@
 #connectDiv{
-    margin-top: clamp(100px, 16vw, 240px);
-    margin-bottom: clamp(100px, 16vw, 240px);
+    margin-top: clamp(128px, 17vw, 256px);
+    margin-bottom: clamp(128px, 17vw, 256px);
     font-size: clamp(20px, 2.8vw, 40px);
 }
 
@@ -9,14 +9,27 @@
     white-space: nowrap;
 }
 
-#connectDiv a{
+#connectDiv a,
+#connectDiv .connectAction{
     position: relative;
     display: inline-block;
     text-decoration: none;
     transition: color 0.7s cubic-bezier(0.25, 0, 0, 1);
 }
 
-#connectDiv a::after{
+/* The Résumé / Email triggers are buttons styled to read like the links */
+#connectDiv .connectAction{
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: url('/cursor.svg') 2 2, pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#connectDiv a::after,
+#connectDiv .connectAction::after{
     content: '';
     position: absolute;
     left: 0;
@@ -29,11 +42,40 @@
     transition: transform 0.75s cubic-bezier(0.25, 0, 0, 1);
 }
 
-#connectDiv a:hover{
+#connectDiv a:hover,
+#connectDiv .connectAction:hover{
     color: #954130;
 }
 
-#connectDiv a:hover::after{
+#connectDiv a:hover::after,
+#connectDiv .connectAction:hover::after{
     transform: scaleX(1);
     transform-origin: left center;
+}
+
+/* ── Toast (email copied) ───────────────────────────────────────────── */
+.connectToast{
+    position: fixed;
+    left: 50%;
+    bottom: calc(30px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(12px);
+    background: #F0E7C2;
+    color: #00291C;
+    padding: 11px 20px;
+    border-radius: 999px;
+    font-size: 13px !important;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10001;
+    white-space: nowrap;
+    transition: opacity 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+                transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.connectToast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }

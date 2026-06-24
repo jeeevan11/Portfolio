@@ -1,11 +1,31 @@
 #projectRefs{
-    margin-top: clamp(100px, 16vw, 240px);
+    margin-top: clamp(128px, 17vw, 256px);
+}
+
+/* ── Small section label shared by Experience / Work / Skills ───────── */
+.sectionLabel{
+    font-size: clamp(11px, 1vw, 13px) !important;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #687451;
+    margin-bottom: clamp(36px, 4.8vw, 68px);
+    line-height: 1;
 }
 
 .projectPara{
-    line-height: 1.12;
-    white-space: nowrap;
     position: relative;
+    margin-bottom: clamp(54px, 6.5vw, 104px);
+}
+
+.projName{
+    line-height: 1.04;
+    white-space: nowrap;
+}
+
+/* Projects without a public link — plain, non-interactive text */
+.projNameStatic{
+    cursor: default;
 }
 
 #projectRefs a{
@@ -33,7 +53,7 @@
 }
 
 #projectRefs a.featuredLink {
-    color: #954130;
+    color: var(--highlight);
 }
 
 #projectRefs a.featuredLink:hover {
@@ -46,37 +66,36 @@
 }
 
 .sup{
-    font-size: clamp(12px, 1.2vw, 18px);
-    visibility: hidden;
+    font-size: clamp(12px, 1.2vw, 18px) !important;
     letter-spacing: 0;
+    opacity: 0.4;
+    margin-left: 0.15em;
+    vertical-align: super;
 }
 
-#projectRefs a:hover + .sup{
-    visibility: visible;
-}
-
-/* Tags float ABOVE the project name (in the empty space above) — always visible, never clipped */
-.projTags {
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    margin-bottom: 0.45em;
-    font-size: clamp(11px, 1vw, 15px);
+/* Metric line — small caps, olive, always visible above the description */
+.projTag {
+    display: block;
+    font-size: clamp(11px, 1vw, 14px) !important;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #687451;
-    white-space: nowrap;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.5s cubic-bezier(0.25, 0, 0, 1),
-                transform 0.5s cubic-bezier(0.25, 0, 0, 1);
-    pointer-events: none;
+    margin-top: 0.5em;
+    white-space: normal;
 }
 
-#projectRefs a:hover .projTags {
-    opacity: 1;
-    transform: translateY(0);
+/* One-line human description — body text, dimmed, wraps */
+.projDesc {
+    font-size: clamp(15px, 1.5vw, 19px) !important;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.45;
+    color: #F0E7C2;
+    opacity: 0.9;
+    margin-top: 0.7em;
+    max-width: 46ch;
+    text-wrap: pretty;
 }
 
 @media (max-width: 768px) {
@@ -84,15 +103,12 @@
         margin-bottom: clamp(60px, 12vw, 100px);
     }
 
-    .projectPara {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: baseline;
+    .projName {
+        white-space: normal;
     }
 
-    .projectPara .sup {
-        order: -1;
-        margin-right: 0.4em;
+    .projDesc {
+        max-width: none;
+        margin-left: auto;
     }
 }

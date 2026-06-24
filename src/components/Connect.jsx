@@ -1,25 +1,70 @@
+import { useState } from 'react'
 import connectData from './connectData.js'
 import './Connect.css'
 
 function Connect() {
+  const [toast, setToast] = useState('')
+
+  const flash = (msg) => {
+    setToast(msg)
+    window.clearTimeout(flash._t)
+    flash._t = window.setTimeout(() => setToast(''), 1900)
+  }
+
+  const copy = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      flash('Email copied to clipboard')
+    } catch {
+      flash(text)
+    }
+  }
+
+  const openResume = () => window.dispatchEvent(new Event('jc:open-resume'))
+
   return (
     <div id="connectDiv">
-      {connectData.map((link) => (
-        <p key={link.key}>
-          <a
-            href={link.link}
-            // Real socials open in a new tab. Placeholders aren't live yet,
-            // so we drop the target and prevent default to avoid the
-            // href="#" page-jump.
-            target={link.placeholder ? undefined : '_blank'}
-            rel={link.placeholder ? undefined : 'noopener noreferrer'}
-            onClick={link.placeholder ? (e) => e.preventDefault() : undefined}
-            aria-disabled={link.placeholder || undefined}
-          >
-            {link.name}
-          </a>
-        </p>
-      ))}
+      {connectData.map((link) => {
+        const isExternal = link.link && /^https?:/.test(link.link)
+        let inner
+        if (link.resume) {
+          inner = (
+            <button type="button" className="connectAction" onClick={openResume}>
+              {link.name}
+            </button>
+          )
+        } else if (link.copy) {
+          inner = (
+            <button
+              type="button"
+              className="connectAction"
+              onClick={() => copy(link.copy)}
+              aria-label="Copy email address"
+            >
+              {link.name}
+            </button>
+          )
+        } else {
+          inner = (
+            <a
+              href={link.link}
+              target={isExternal ? '_blank' : undefined}
+              rel="noopener noreferrer"
+            >
+              {link.name}
+            </a>
+          )
+        }
+        return (
+          <p key={link.key} data-stamp={link.image}>
+            {inner}
+          </p>
+        )
+      })}
+
+      <div className={`connectToast${toast ? ' show' : ''}`} role="status" aria-live="polite">
+        {toast}
+      </div>
     </div>
   )
 }

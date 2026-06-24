@@ -1,0 +1,85 @@
+#skillsDiv{
+    margin-top: clamp(128px, 17vw, 256px);
+}
+
+.skillRow{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em 1.4em;
+    align-items: baseline;
+    padding: 0.95em 0;
+    border-top: 1px solid rgba(240, 231, 194, 0.12);
+}
+
+.skillRow:last-of-type{
+    border-bottom: 1px solid rgba(240, 231, 194, 0.12);
+}
+
+.skillLabel{
+    flex: 0 0 auto;
+    min-width: 9em;
+    font-size: clamp(11px, 1vw, 14px) !important;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #687451;
+}
+
+.skillItems{
+    flex: 1 1 16em;
+    font-size: clamp(15px, 1.5vw, 19px) !important;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+    color: #F0E7C2;
+    opacity: 0.9;
+}
+
+.recogLabel{
+    margin-top: clamp(64px, 7.5vw, 108px);
+}
+
+.recogItem{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2em 0.9em;
+    margin-top: 1.15em;
+    padding-left: 0.85em;
+    border-left: 2px solid var(--highlight);
+}
+
+.recogTitle{
+    font-size: clamp(16px, 1.7vw, 22px) !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: #F0E7C2;
+}
+
+.recogDetail{
+    font-size: clamp(11px, 1vw, 14px) !important;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--highlight);
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .skillRow{
+        justify-content: flex-end;
+        text-align: right;
+    }
+    .skillLabel{
+        min-width: 0;
+        flex-basis: 100%;
+    }
+    .recogItem{
+        justify-content: flex-end;
+        border-left: none;
+        border-right: 2px solid var(--highlight);
+        padding-left: 0;
+        padding-right: 0.85em;
+    }
+}

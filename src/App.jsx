@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
+import { registerLiquidEases } from './lib/motion'
 import Name from './components/Name'
 import Scrollable from './components/Scrollable'
 import Footer from './components/Footer'
 import Grain from './components/Grain'
+import ResumeViewer from './components/ResumeViewer'
 import quotes from './components/quotesData'
 
 let _audioCtx = null
@@ -32,33 +33,23 @@ function initMechanicalClicks(lenis) {
   const unlock = () => { if (_audioCtx && _audioCtx.state !== 'running') _audioCtx.resume().catch(() => {}) }
   const evts = ['click','pointerdown','touchstart','keydown']
   evts.forEach(e => document.addEventListener(e, unlock, { passive: true }))
-  document.addEventListener('click', () => _tryPlay(1.6))
-  lenis.on('scroll', ({ velocity }) => {
+  const onClick = () => _tryPlay(1.6)
+  document.addEventListener('click', onClick)
+  const onScroll = ({ velocity }) => {
     const speed = Math.abs(velocity); if (speed < 0.3) return
     const now = Date.now(); if (now - _lastClickTime < Math.max(45, 180 - speed * 22)) return
     _lastClickTime = now; _tryPlay(velocity)
-  })
-  return () => evts.forEach(e => document.removeEventListener(e, unlock))
+  }
+  lenis.on('scroll', onScroll)
+  return () => {
+    evts.forEach(e => document.removeEventListener(e, unlock))
+    document.removeEventListener('click', onClick)
+    lenis.off('scroll', onScroll)
+  }
 }
 
-gsap.registerPlugin(ScrollTrigger, CustomEase)
-
-// ── Liquid motion language ─────────────────────────────────────────────
-// Every animation on this site shares one set of curves so the whole page
-// feels like a single fluid system. Each curve is tuned to a specific
-// quality of liquid motion:
-//   liquid     — viscous flow (slow surface tension at start, smooth glide,
-//                gentle settle). The default ease for everything.
-//   liquidFlow — symmetric inOut, like fluid pouring through a narrow neck.
-//                Use for things that flow continuously in both directions.
-//   liquidPour — heavy decel, like water arriving at a basin and slowing
-//                as it fills. Use for "settles into place" motion.
-//   liquidDrip — slight overshoot, like a droplet hitting and rebounding.
-//                Use for elements that should feel alive when they land.
-CustomEase.create('liquid',     'M0,0 C0.22,0.04 0.16,1 1,1')
-CustomEase.create('liquidFlow', 'M0,0 C0.65,0.02 0.05,0.98 1,1')
-CustomEase.create('liquidPour', 'M0,0 C0.16,0.86 0.18,1 1,1')
-CustomEase.create('liquidDrip', 'M0,0 C0.34,1.18 0.22,0.97 1,1')
+gsap.registerPlugin(ScrollTrigger)
+registerLiquidEases() // liquid / liquidFlow / liquidPour / liquidDrip — see ./lib/motion.js
 
 // Default ease for every gsap.to/from on the page — one motion language.
 gsap.defaults({ ease: 'liquid', duration: 1.2 })
@@ -85,13 +76,19 @@ function App() {
   const introTimeoutRef = useRef(null)
   const introVideoStartRef = useRef(null)
   const cinematicRef = useRef(false)
-  const focusEnteringRef = useRef(false)
   const focusUnmountTimerRef = useRef(null)
+  // Safety net: if `ended` never fires (stalled/looping video, browser quirk),
+  // force-exit so the user is never trapped behind the focus backdrop. The
+  // cinematic clip is ~35s; 45s is a generous ceiling, never a content cap.
+  const focusWatchdogRef = useRef(null)
 
   const enterFocusMode = (onExit, opts = {}) => {
-    if (IS_MOBILE) {
-      // Phone: no video. Skip the focus-mode cinematic and run the
-      // animation timeline immediately via onExit.
+    const video = IS_MOBILE ? null : ambientVideoRef.current
+    if (!video) {
+      // Phone, or no <video> in the DOM: skip the cinematic and run the
+      // animation timeline now. Never commit focus state without a video —
+      // there'd be nothing to fire `ended` and exit, trapping the user behind
+      // the focus backdrop with the timeline never started.
       if (onExit) onExit()
       return
     }
@@ -111,9 +108,6 @@ function App() {
     const audio = ambientAudioRef.current
     if (audio) audio.pause()
 
-    const video = ambientVideoRef.current
-    if (!video) return
-
     // Video plays its full duration. No early fade. Hard cut on `ended`.
     let exitTriggered = false
     const cleanup = () => {
@@ -129,7 +123,7 @@ function App() {
     const playVideoNow = () => {
       video.muted = false
       video.loop = false
-      try { video.currentTime = 0 } catch (e) {}
+      try { video.currentTime = 0 } catch { /* not seekable yet */ }
       video.volume = 1.0
       video.play().catch(() => {})
       video.addEventListener('ended', onEnded)
@@ -155,11 +149,21 @@ function App() {
       // JC / Creative click — play immediately, no captions
       playVideoNow()
     }
+
+    if (focusWatchdogRef.current) clearTimeout(focusWatchdogRef.current)
+    focusWatchdogRef.current = setTimeout(() => {
+      focusWatchdogRef.current = null
+      exitFocusMode()
+    }, 45000)
   }
 
   const exitFocusMode = () => {
     if (!focusActiveRef.current) return
     focusActiveRef.current = false
+    if (focusWatchdogRef.current) {
+      clearTimeout(focusWatchdogRef.current)
+      focusWatchdogRef.current = null
+    }
     // NOTE: setFocusActive(false) is deferred until after the silence beat
     // and backdrop fade-out — keeps the backdrop in the DOM throughout.
     const wasCinematic = cinematicRef.current
@@ -184,7 +188,7 @@ function App() {
       video.pause()
       video.muted = true
       video.loop = true
-      try { video.currentTime = 0 } catch (e) {}
+      try { video.currentTime = 0 } catch { /* not seekable yet */ }
     }
     document.body.classList.add('focusEnding')
 
@@ -304,7 +308,9 @@ function App() {
     if (IS_MOBILE) return // no music on phone
     const audio = new Audio(encodeURI('/04 Wick Man (Instrumental).mp3'))
     audio.loop = true
-    audio.preload = 'auto'
+    // 'none' (not 'auto') so the 2.1 MB track isn't eagerly downloaded on
+    // mount; the user-gesture audio.play() in handleStart fetches it on demand.
+    audio.preload = 'none'
     audio.volume = 0
     audio.setAttribute('playsinline', '')
     audio.setAttribute('webkit-playsinline', '')
@@ -538,8 +544,6 @@ function App() {
       // Fill widths at start vs final
       const initialFillAnak  = isMobile ? fillAnakWidth  : 0
       const initialFillHahal = isMobile ? fillHahalWidth : 0
-      const fillAnakAtFinal  = isMobile ? 0 : (fillAnakWidth  / initialLoaderSize) * finalLoaderSize
-      const fillHahalAtFinal = isMobile ? 0 : (fillHahalWidth / initialLoaderSize) * finalLoaderSize
 
       // ── Initial states ────────────────────────────────────────────
       // All positioning via transform (x/y) — never top/left during animation.
@@ -555,9 +559,8 @@ function App() {
       gsap.set(fillHahal, { width: initialFillHahal + 'px' })
 
       gsap.set('#content',     { opacity: 0 })
-      gsap.set('#details p',   { opacity: 0, y: 50 })
-      gsap.set('.projectPara', { opacity: 0, y: 50 })
-      gsap.set('#connectDiv p',{ opacity: 0, y: 50 })
+      // Content lines carry no entry transform — the scroll spotlight (below)
+      // owns their opacity, so nothing shifts position when it reveals.
       gsap.set('#footerYear',  { opacity: 0, y: 120 })
       gsap.set('#footerLine',  { scaleX: 0 })
       gsap.set('.footerBackTop',{ opacity: 0, y: 20 })
@@ -689,10 +692,114 @@ function App() {
         isMobile ? '+=0.2' : '-=2.0'
       )
 
-      // 5. Stagger reveal — each element rises through fluid, slightly out of phase
-      tl.to('#details p',    { opacity: 1, y: 0, duration: 2.4, stagger: 0.34, ease: 'liquid' }, '-=1.8')
-      tl.to('.projectPara',  { opacity: 1, y: 0, duration: 2.4, stagger: 0.14, ease: 'liquid' }, '-=2.0')
-      tl.to('#connectDiv p', { opacity: 1, y: 0, duration: 2.4, stagger: 0.26, ease: 'liquid' }, '-=1.8')
+      // 5. Every content line reveals through one scroll "spotlight": dim until
+      // it nears the centre of the viewport, brightest at centre, dim again as
+      // it passes. Opacity only, no entry transform, so nothing shifts on load
+      // (this is also what stops the hero from jumping up after a reload).
+      const spotEls = () =>
+        document.querySelectorAll(
+          '#details p, .sectionLabel, .aboutItem, .expItem, .projectPara, .skillRow, .recogItem, #connectDiv p'
+        )
+      const updateSpotlight = () => {
+        const els = spotEls()
+        if (!els.length) return
+        const vh = window.innerHeight
+        const center = vh / 2
+        const reach = vh * 0.6
+        els.forEach((el) => {
+          const r = el.getBoundingClientRect()
+          const d = Math.min(1, Math.abs(r.top + r.height / 2 - center) / reach)
+          el.style.opacity = String(Math.max(0.66, 0.97 - d * d * 0.31))
+        })
+      }
+
+      // ── Portrait stamp scene-swap ─────────────────────────────────
+      // The stamp crossfades to whichever section is level with it; in the
+      // intro/about region (and past the work) it shows the portrait.
+      const PORTRAIT = '/jatin.jpg'
+      const stampLayers = Array.from(document.querySelectorAll('.stampLayer'))
+      let stampActive = 0
+      let stampSrc = PORTRAIT
+      const setStamp = (src) => {
+        if (!stampLayers.length || src === stampSrc) return
+        stampSrc = src
+        const incoming = stampLayers[1 - stampActive]
+        incoming.src = src
+        incoming.classList.add('stampLayerActive')
+        stampLayers[stampActive].classList.remove('stampLayerActive')
+        stampActive = 1 - stampActive
+      }
+      const updateStamp = () => {
+        const items = Array.from(document.querySelectorAll('[data-stamp]'))
+        if (!items.length) return
+        const centerY = window.innerHeight / 2
+        const firstTop = items[0].getBoundingClientRect().top
+        const lastBottom = items[items.length - 1].getBoundingClientRect().bottom
+        let chosen = PORTRAIT
+        if (centerY >= firstTop && centerY <= lastBottom) {
+          let best = null
+          let bestDist = Infinity
+          items.forEach((el) => {
+            const r = el.getBoundingClientRect()
+            const inside = centerY >= r.top && centerY <= r.bottom
+            const dist = inside ? 0 : Math.abs(r.top + r.height / 2 - centerY)
+            if (dist < bestDist) { bestDist = dist; best = el }
+          })
+          if (best) chosen = best.getAttribute('data-stamp') || PORTRAIT
+        }
+        setStamp(chosen)
+      }
+      // Preload the swap images so the crossfade never flashes.
+      Array.from(document.querySelectorAll('[data-stamp]')).forEach((el) => {
+        const pre = new Image(); pre.src = el.getAttribute('data-stamp')
+      })
+
+      const onScrollFx = () => { updateSpotlight(); updateStamp() }
+      lenis.on('scroll', onScrollFx)
+      window.addEventListener('resize', onScrollFx)
+      onScrollFx()                       // set initial brightness + stamp now
+      requestAnimationFrame(onScrollFx)  // and again once laid out
+
+      // ── Idle: after a pause, rotate through the aesthetic photos ──
+      const AESTHETIC = [
+        '/aesthetic/me-2.jpg', '/aesthetic/a1.jpg', '/aesthetic/a2.jpg',
+        '/aesthetic/a3.jpg', '/aesthetic/a4.jpg', '/aesthetic/a5.jpg', '/aesthetic/a6.jpg',
+      ]
+      // These only appear after a 5s idle pause — preload them off the
+      // critical path so they don't compete with first paint or the work
+      // thumbnails. They're warm well before the idle rotation begins.
+      const preloadAesthetic = () => {
+        AESTHETIC.forEach((s) => { const pre = new Image(); pre.src = s })
+      }
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(preloadAesthetic, { timeout: 4000 })
+      } else {
+        setTimeout(preloadAesthetic, 2000)
+      }
+      let idleTimer = null
+      let rotateTimer = null
+      let idleIndex = 0
+      let idleActive = false
+      const enterIdle = () => {
+        if (idleActive || !stampLayers.length) return
+        idleActive = true
+        const tick = () => { setStamp(AESTHETIC[idleIndex % AESTHETIC.length]); idleIndex++ }
+        tick()
+        rotateTimer = setInterval(tick, 3400)
+      }
+      const exitIdle = () => {
+        if (rotateTimer) { clearInterval(rotateTimer); rotateTimer = null }
+        if (idleActive) { idleActive = false; updateStamp() } // restore the scroll-position image
+      }
+      const bumpIdle = () => {
+        exitIdle()
+        if (idleTimer) clearTimeout(idleTimer)
+        idleTimer = setTimeout(enterIdle, 5000)
+      }
+      window.addEventListener('mousemove', bumpIdle, { passive: true })
+      window.addEventListener('pointerdown', bumpIdle, { passive: true })
+      lenis.on('scroll', bumpIdle)
+      bumpIdle()
 
       // ── Footer scroll-triggered animations ────────────────────────
       // liquidPour: heavy decel — each element "fills" its slot like
@@ -751,6 +858,11 @@ function App() {
         if (audioRafId) cancelAnimationFrame(audioRafId)
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
+        window.removeEventListener('resize', onScrollFx)
+        window.removeEventListener('mousemove', bumpIdle)
+        window.removeEventListener('pointerdown', bumpIdle)
+        if (idleTimer) clearTimeout(idleTimer)
+        if (rotateTimer) clearInterval(rotateTimer)
         gsap.ticker.remove(rafFn)
         lenis.destroy()
         ScrollTrigger.getAll().forEach((t) => t.kill())
@@ -837,7 +949,7 @@ function App() {
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') exitFocusMode() }}
           />
-          <div id="focusCaption" aria-live="polite" aria-hidden="true">
+          <div id="focusCaption" aria-live="polite">
             <span>But who wants an easy life?</span>
             <span>It&apos;s boring.</span>
           </div>
@@ -854,10 +966,49 @@ function App() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             tabIndex={-1}
           />
         </div>
+      )}
+      {/* Portrait stamp — pinned left on desktop; the image crossfades to match
+          whichever section is level with it. Two layers so the swap dissolves. */}
+      {!IS_MOBILE && (
+        <div
+          className="profileStamp"
+          role="button"
+          tabIndex={0}
+          aria-label="View résumé"
+          onClick={() => window.dispatchEvent(new Event('jc:open-resume'))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              window.dispatchEvent(new Event('jc:open-resume'))
+            }
+          }}
+        >
+          <img
+            className="stampLayer stampLayerActive"
+            src="/jatin.jpg"
+            alt=""
+            draggable="false"
+            decoding="async"
+            onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }}
+          />
+          <img className="stampLayer" src="/jatin.jpg" alt="" draggable="false" decoding="async" />
+        </div>
+      )}
+      {/* Phones: the photo becomes a faint, centred background behind the content */}
+      {IS_MOBILE && (
+        <img
+          className="profileBg"
+          src="/jatin.jpg"
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+          decoding="async"
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
       )}
       {!IS_MOBILE && (
       <button
@@ -885,6 +1036,7 @@ function App() {
       </button>
       )}
       <Name onNameClick={handleNameClick} />
+      <ResumeViewer />
       <main id="content">
         <Scrollable />
         <Footer quote={quotes[quoteIndex]} onLineHover={shuffleQuote} />

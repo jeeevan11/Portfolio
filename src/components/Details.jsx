@@ -29,7 +29,7 @@ function playCreativeChime(velocity = 1) {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32)
     osc.connect(gain); gain.connect(ctx.destination)
     osc.start(now); osc.stop(now + 0.34)
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 }
 
 function Details() {
@@ -81,9 +81,6 @@ function Details() {
     }
     document.body.classList.add('creativePeek')
   }
-  const handleCreativeRelease = () => {
-    document.body.classList.remove('creativePeek')
-  }
 
   useEffect(() => {
     pickRandomFill() // initial image so the first reveal is never blank
@@ -91,7 +88,7 @@ function Details() {
     // Defer the rest of the preload until the browser is idle — keeps the
     // initial paint light and lets the JC intro animate without contention.
     const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500))
-    const idleId = idle(() => {
+    idle(() => {
       for (let i = 1; i <= FILL_COUNT; i++) {
         const pre = new Image()
         pre.src = `/creative-fills/${i}.webp`
@@ -146,6 +143,10 @@ function Details() {
         </span>
         {' '}
         <span className="headingWord" {...headingHandlers}>Developer</span>
+      </p>
+      <p className="detailsIntro">
+        Self-taught engineer and 0 to 1 builder, across applied AI, full-stack,
+        and machine learning.
       </p>
     </div>
   )

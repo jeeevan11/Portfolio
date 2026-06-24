@@ -1,43 +1,43 @@
-// Socials shown in the scroll-cycle slot.
-//
-// Same `placeholder: true` convention as projectsData — the entry renders
-// and cycles, but the link doesn't navigate. Only LinkedIn + Instagram
-// are live; the rest are reserved for when you choose to expose them.
+// Socials + contact shown in the Connect section. `image` is the brand logo
+// the stamp flips to when that link is level. `resume: true` opens the résumé
+// viewer; `copy` holds an address that's copied to the clipboard on click.
 
 const connectData = [
   {
+    key: 0,
+    name: 'Résumé',
+    resume: true,
+    image: '/jatin.jpg',
+  },
+  {
     key: 1,
     name: 'Email',
-    link: '#',
-    placeholder: true,
+    copy: 'connectwithjatin365@gmail.com',
+    image: '/logos/gmail.svg',
   },
   {
     key: 2,
-    name: 'LinkedIn',
-    link: 'https://www.linkedin.com/in/jatin-chhanwal-a241a2289',
+    name: 'GitHub',
+    link: 'https://github.com/jeeevan11',
+    image: '/logos/github.svg',
   },
   {
     key: 3,
-    name: 'GitHub',
-    link: '#',
-    placeholder: true,
+    name: 'LinkedIn',
+    link: 'https://www.linkedin.com/in/jatinchhanwal/',
+    image: '/logos/linkedin.svg',
   },
   {
     key: 4,
     name: 'Instagram',
     link: 'https://www.instagram.com/jeeevan11/',
+    image: '/logos/instagram.svg',
   },
   {
     key: 5,
     name: 'Twitter / X',
-    link: '#',
-    placeholder: true,
-  },
-  {
-    key: 6,
-    name: 'Codeforces',
-    link: '#',
-    placeholder: true,
+    link: 'https://x.com/Jeeevannn11',
+    image: '/logos/x.svg',
   },
 ]
 

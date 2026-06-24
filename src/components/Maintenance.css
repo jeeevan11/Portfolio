@@ -1,0 +1,313 @@
+/* ── Maintenance experience — a looping name → message → film ──────────
+   Palette + Kumbh Sans match the live portfolio. The page is a single,
+   non-scrollable screen. Class selectors (0,1,0) intentionally override the
+   global `* { font-size: clamp(...) }` rule in index.css (0,0,0). */
+
+.maint-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: #00291C;
+  color: #F0E7C2;
+  overflow: hidden;
+}
+
+/* ── The name — animated by GSAP, parks top-left as the wordmark ────── */
+.maint-loader {
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  margin: 0;
+  white-space: nowrap;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #F0E7C2;
+  font-family: "Kumbh Sans", sans-serif;
+  font-weight: 700;
+  transform-origin: left top;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.maint-loader > span {
+  display: inline-block;
+  vertical-align: top;
+  font-size: inherit;
+}
+
+.maint-loader .ml-fill {
+  overflow: hidden;
+  width: 0;
+}
+
+/* ── Idle message lockup — children revealed individually by GSAP ───── */
+.maint-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5em;
+  max-width: 720px;
+  pointer-events: none;
+}
+
+.maint-root.phase-idle .maint-center {
+  pointer-events: auto;
+}
+
+/* Children start hidden — GSAP takes over immediately after mount. */
+.maint-title,
+.maint-sub,
+.maint-play {
+  opacity: 0;
+}
+
+.maint-title {
+  font-family: "Kumbh Sans", sans-serif;
+  font-weight: 700;
+  font-size: clamp(46px, 10vw, 120px);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #F0E7C2;
+}
+
+.maint-dot {
+  color: #954130;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.maint-sub {
+  font-family: "Kumbh Sans", sans-serif;
+  font-weight: 500;
+  font-size: clamp(15px, 2.1vw, 21px);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  color: #F0E7C2;
+  max-width: 24ch;
+  text-wrap: balance;
+  /* opacity managed by GSAP — targets 0.62 on reveal */
+}
+
+/* ── Resume + Contact links — pinned to the bottom of the screen ────── */
+.maint-links {
+  position: fixed;
+  z-index: 3;
+  bottom: calc(32px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2.4em;
+  opacity: 0;          /* GSAP takes over after mount */
+}
+
+.maint-link {
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #F0E7C2;
+  /* 0.62 composites to ~5.7:1 on #00291C — passes WCAG AA for this 11px text.
+     (0.35 was 2.74:1, a hard fail.) */
+  opacity: 0.62;
+  text-decoration: none;
+  padding: 10px 2px;
+  border-radius: 2px;
+  cursor: url('/cursor.svg') 2 2, pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.maint-link:hover {
+  opacity: 0.9;
+}
+
+.maint-link:focus-visible {
+  opacity: 0.95;
+  outline: 2px solid #F0E7C2;
+  outline-offset: 3px;
+}
+
+/* ── The circle — a rotating "watch the film" play button ──────────── */
+.maint-play {
+  position: relative;
+  margin-top: clamp(30px, 5vw, 52px);
+  width: 134px;
+  height: 134px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #F0E7C2;
+  cursor: url('/cursor.svg') 2 2, pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.maint-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: maintSpin 28s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+/* Both text AND textPath must be targeted — index.css's `* { font-size }`
+   matches the textPath element directly and would otherwise blow it up. */
+.maint-ring text,
+.maint-ring textPath {
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+}
+
+.maint-ring text {
+  fill: #F0E7C2;
+  opacity: 0.5;
+  transition: opacity 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* The play disc */
+.maint-disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: rgba(240, 231, 194, 0.07);
+  border: 1.5px solid rgba(240, 231, 194, 0.45);
+  transition:
+    background-color 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.maint-tri {
+  width: 21px;
+  height: 21px;
+  color: #F0E7C2;
+  transition: color 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.maint-play:hover {
+  transform: scale(1.06);
+}
+.maint-play:hover .maint-disc {
+  background: #F0E7C2;
+  border-color: #F0E7C2;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+}
+.maint-play:hover .maint-tri {
+  color: #00291C;
+}
+.maint-play:hover .maint-ring text {
+  opacity: 0.85;
+}
+
+.maint-play:focus-visible {
+  outline: 2px solid #F0E7C2;
+  outline-offset: 4px;
+}
+.maint-play:focus-visible .maint-disc {
+  background: #F0E7C2;
+  border-color: #F0E7C2;
+}
+.maint-play:focus-visible .maint-tri {
+  color: #00291C;
+}
+
+@keyframes maintSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Cinema — the full-screen short film ───────────────────────────── */
+.maint-cinema {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+  cursor: url('/cursor.svg') 2 2, pointer;
+  transition: opacity 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.maint-root.phase-film .maint-cinema {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.maint-video {
+  width: min(80vw, 880px);
+  max-height: 82vh;
+  border-radius: 4px;
+  box-shadow: 0 50px 140px rgba(0, 0, 0, 0.85);
+  cursor: url('/cursor.svg') 2 2, pointer;
+}
+
+.maint-cinema-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(26px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  font-family: "Kumbh Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #F0E7C2;
+  opacity: 0.6;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Phone ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .maint-play {
+    width: 122px;
+    height: 122px;
+  }
+  .maint-disc {
+    width: 60px;
+    height: 60px;
+  }
+  .maint-tri {
+    width: 19px;
+    height: 19px;
+  }
+  .maint-video {
+    width: min(90vw, 560px);
+    max-height: 74vh;
+  }
+}
+
+@media (hover: none) {
+  .maint-play,
+  .maint-cinema,
+  .maint-video,
+  .maint-link {
+    cursor: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maint-ring { animation: none; }
+  .maint-cinema { transition-duration: 0.01ms; }
+}

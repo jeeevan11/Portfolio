@@ -1,0 +1,34 @@
+# Jatin Chhanwal
+
+Creative Developer & Founding Engineer. Self-taught engineer and 0 to 1 builder,
+working across applied AI, full-stack, and machine learning. Based in Bengaluru,
+India. Studying Computer Science at BITS Pilani.
+
+Site: https://jatinchhanwal.vercel.app/
+
+## Experience
+- **Social Gravity AI** — Founding Member & Founding Engineer (2025–present). Owns the embeddable web AI-twin (call an AI version of a real person and talk to it out loud) and the overall experience. Cut the AI's first reply from 3–5 seconds to under 1. 2,500 conversations and 73,000 minutes of dialogue in the first two weeks. https://socialgravity.ai/
+- **Findable** — Co-Founder, Engineering (2026). Technical SEO and generative engine optimization (GEO). For a German retailer nearly invisible to AI search, ran a dual-engine audit, found 49 fixes, and built the 12-month turnaround.
+- **UpSale** — Head of Growth & Post-Production (2024–2025). European social agency; took restaurants viral, adding 5,000–10,000 followers.
+
+## Selected work
+- **Steward** — a personal AI chief-of-staff that reads all Gmail and WhatsApp, clears the noise, and surfaces only what matters. Live: ~4,900 messages sorted, 95 ever sent. ~74k LOC Python, 1,061 tests. https://github.com/jeeevan11/steward-app
+- **The Referee** — catches when two coding agents quietly disagree before they break a merge. 87.5% accuracy vs 33% for random. Meta × PyTorch Hackathon, Top 100 of 35,000 teams. https://huggingface.co/spaces/testingaccc/conflict-arbitration-env
+- **Hospital Helper** — a reinforcement-learning agent that triages scarce ICU beds and ventilators, beating hand-coded rules 78.85 to 68.43. Meta × PyTorch Hackathon, Top 100 of 35,000. https://huggingface.co/spaces/testingaccc/hospital-ed
+- **Drishti** — an offline Android app that speaks which rupee note a blind person is holding, in Hindi, English, and Kannada. 91.6% accurate; refuses to guess below 64%. iQOO Hackathon, Special Honour.
+- **Nuska** — a doctor speaks one Hinglish sentence and the patient gets a clean WhatsApp prescription in 15 seconds. It can never invent a medicine or a dose.
+- **Mac Tools** — Swift menu-bar utilities: a live Claude API token-usage meter and WorldClock.
+
+## Recognition
+- Meta × PyTorch Hackathon — Top 100 of 35,000+ teams.
+- iQOO Hackathon, Bengaluru — Special Honour.
+
+## Skills
+Python, TypeScript, Swift, Kotlin · React, Next.js, Vite, Tailwind, SwiftUI, Jetpack Compose · Node, Deno, Supabase, Postgres, Stripe · Anthropic, OpenAI, Groq, Gemini, xAI, RAG, agents, real-time voice, reinforcement learning (GRPO, PPO, LoRA) · Technical SEO, GEO · Vercel, Railway, Hugging Face, Git.
+
+## Contact
+- Email: connectwithjatin365@gmail.com
+- GitHub: https://github.com/jeeevan11
+- LinkedIn: https://www.linkedin.com/in/jatinchhanwal/
+- X/Twitter: https://x.com/Jeeevannn11
+- Résumé: https://jatinchhanwal.vercel.app/Jatin_Chhanwal_Resume.pdf

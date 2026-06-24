@@ -48,11 +48,13 @@ function Footer({ quote = DEFAULT_QUOTE, onLineHover }) {
         >
           <span>{quote.line1}</span>
           <span>{quote.line2}</span>
-          <span id="footerAttrib">— {quote.source}</span>
+          <span id="footerAttrib">{quote.source}</span>
         </div>
         <a
           id="footerArrow"
-          href="mailto:connectwithjatin365@gmail.com"
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=connectwithjatin365@gmail.com&su=Hi%20Jatin%2C%20I'm..."
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Email Jatin"
         >→</a>
       </div>

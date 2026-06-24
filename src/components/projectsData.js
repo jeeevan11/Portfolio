@@ -1,76 +1,68 @@
-// Projects shown in the scroll-cycle slot.
-//
-// `placeholder: true` marks a name that's reserved for a future project —
-// the entry still renders + cycles like any other, but clicking it doesn't
-// navigate anywhere (Projects.jsx swallows the click). Swap `link` for a
-// real URL and drop the placeholder flag when the project ships.
-//
-// `featured: true` paints the name in wine on the slot (currently SG).
-// `tags` floats a small caption above the name on hover.
+// Selected work. Name + metric tag + one vivid line. `link` opens in a new tab;
+// entries without a public link set `placeholder: true` (rendered as plain text).
+// `featured: true` paints the name in the highlight. `image` is the photo the
+// left stamp swaps to when this item is level with it.
 
 const projectsData = [
   {
     key: 0,
-    name: 'Social Gravity AI',
-    link: 'https://socialgravity.ai/',
-    year: 2026,
-    tags: 'Founding Member · Paying users · Raising ↑↑↑',
+    name: 'Steward',
+    link: 'https://github.com/jeeevan11/steward-app',
+    tag: 'Live · ~74k LOC Python · 1,061 tests',
+    desc: 'My phone never stops buzzing. Steward reads every email and WhatsApp, clears the noise, and wakes me only for the two that matter. 4,900 sorted, 95 ever sent.',
     featured: true,
+    image: '/work/steward.jpg',
   },
   {
     key: 1,
-    name: 'Nile',
-    link: 'https://nile-theta.vercel.app',
-    year: 2026,
+    name: 'The Referee',
+    link: 'https://huggingface.co/spaces/testingaccc/conflict-arbitration-env',
+    tag: 'Meta × PyTorch · Top 100 of 35,000',
+    desc: 'Two AI agents write code at once and quietly disagree, until it all breaks at the merge. This catches the fight before it starts. 87.5% right, against 33% for a coin flip.',
+    image: '/work/the-referee.jpg',
   },
   {
     key: 2,
-    name: 'Vellum',
-    link: '#',
-    year: 2026,
-    placeholder: true,
+    name: 'Hospital Helper',
+    link: 'https://huggingface.co/spaces/testingaccc/hospital-ed',
+    tag: 'Meta × PyTorch · Top 100 of 35,000',
+    desc: 'One open bed. Three people who need it. An AI that keeps its head and chooses, beating the rules a human wrote by hand, 78.85 to 68.43.',
+    image: '/work/hospital-helper.jpg',
   },
   {
     key: 3,
-    name: 'Aurora',
+    name: 'Drishti',
     link: '#',
-    year: 2026,
     placeholder: true,
+    tag: 'iQOO Hackathon · Special Honour',
+    desc: 'A blind hand holds a banknote it cannot read. This says the number out loud, offline, in three languages. And when it is not sure, it stays silent rather than risk a wrong one.',
+    image: '/work/drishti.jpg',
   },
   {
     key: 4,
-    name: 'Polaris',
+    name: 'Nuska',
     link: '#',
-    year: 2025,
     placeholder: true,
+    tag: 'In progress',
+    desc: 'A doctor says one line. Fifteen seconds later the patient is holding a clean prescription on WhatsApp. It can never invent a medicine or a dose.',
+    image: '/work/nuska.jpg',
   },
   {
     key: 5,
-    name: 'Onyx',
+    name: 'Mac Tools',
     link: '#',
-    year: 2025,
     placeholder: true,
+    tag: 'Swift · AppKit · menu-bar',
+    desc: 'Little Swift apps I built for myself and never closed. A menu-bar meter that watches my Claude API spend tick up on a live sparkline, and WorldClock, a pure-AppKit clock that sips 7 to 10 MB.',
+    image: '/work/mac-tools.jpg',
   },
   {
     key: 6,
-    name: 'Drift',
-    link: '#',
-    year: 2024,
-    placeholder: true,
-  },
-  {
-    key: 7,
-    name: 'Quill',
-    link: '#',
-    year: 2024,
-    placeholder: true,
-  },
-  {
-    key: 8,
-    name: 'Tessera',
-    link: '#',
-    year: 2024,
-    placeholder: true,
+    name: 'folio25',
+    link: 'https://github.com/jeeevan11',
+    tag: 'React · GSAP · WebGL',
+    desc: 'This page. Built by hand in React and GSAP, down to the grain in the light and the sound under your cursor.',
+    image: '/work/folio25.jpg',
   },
 ]
 

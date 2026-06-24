@@ -14,7 +14,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           gsap: ['gsap'],
-          lenis: ['lenis'],
           react: ['react', 'react-dom'],
         },
       },
