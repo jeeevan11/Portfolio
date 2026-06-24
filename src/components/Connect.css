@@ -50,7 +50,9 @@
 #connectDiv a:hover::after,
 #connectDiv .connectAction:hover::after,
 #connectDiv a.touchLit::after,
-#connectDiv .connectAction.touchLit::after{
+#connectDiv .connectAction.touchLit::after,
+#connectDiv p:hover a::after,
+#connectDiv p:hover .connectAction::after{
     transform: scaleX(1);
     transform-origin: left center;
 }

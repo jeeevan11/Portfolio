@@ -53,7 +53,8 @@ a.expCompany.featuredExp:hover{
 }
 
 a.expCompany:hover::after,
-a.expCompany.touchLit::after{
+a.expCompany.touchLit::after,
+.expItem:hover a.expCompany::after{
     transform: scaleX(1);
     transform-origin: left center;
 }

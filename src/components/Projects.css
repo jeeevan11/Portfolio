@@ -63,7 +63,8 @@
 }
 
 #projectRefs a:hover::after,
-#projectRefs a.touchLit::after{
+#projectRefs a.touchLit::after,
+.projectPara:hover a::after{
     transform: scaleX(1);
     transform-origin: left center;
 }

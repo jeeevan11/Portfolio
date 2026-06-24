@@ -56,6 +56,12 @@ body.navDetailsHover #details p {
     line-height: inherit;
 }
 
+/* Fallback tint so the word is never the plain cream of its neighbours —
+   the rotating photos sit on top of this. */
+.creativeWordBase {
+    color: var(--highlight);
+}
+
 /* Subtle, gentle underline on "Creative" — invites hover discovery */
 .creativeWord::after {
     content: '';
@@ -79,8 +85,9 @@ body.showCreativeFill .creativeWord::after {
     transform: scaleX(1.02);
 }
 
-/* Hover overlay — image stencil fades in. Background-image is set inline
-   via JS (random pick from the creative-fills pool on each hover). */
+/* Image stencil: the photo shows through the letterforms (background-clip:
+   text). The active layer is always visible and the two layers crossfade as
+   the photo rotates — set inline via JS (Details.jsx). */
 .creativeWordFill {
     position: absolute;
     inset: 0;
@@ -91,12 +98,11 @@ body.showCreativeFill .creativeWord::after {
     -webkit-text-fill-color: transparent;
     color: transparent;
     opacity: 0;
-    transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: opacity 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
     pointer-events: none;
     user-select: none;
 }
 
-.creativeWord:hover .creativeWordFill,
-body.showCreativeFill .creativeWordFill {
+.creativeWordFill.fillActive {
     opacity: 1;
 }

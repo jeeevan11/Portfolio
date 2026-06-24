@@ -44,17 +44,27 @@ function Details() {
     onTouchCancel: hideColor,
   }
 
-  const fillRef = useRef(null)
+  // Two stacked image-fill layers so each new photo crossfades in instead of
+  // hard-cutting. The active layer is shown; pickRandomFill loads the next
+  // photo onto the hidden layer and swaps which one is active.
+  const fillA = useRef(null)
+  const fillB = useRef(null)
+  const activeFill = useRef(0)
   const lastFillIndexRef = useRef(-1)
 
   const pickRandomFill = () => {
-    if (!fillRef.current) return
+    const layers = [fillA.current, fillB.current]
+    if (!layers[0] || !layers[1]) return
     let next
     do {
       next = Math.floor(Math.random() * FILL_COUNT) + 1
     } while (next === lastFillIndexRef.current && FILL_COUNT > 1)
     lastFillIndexRef.current = next
-    fillRef.current.style.backgroundImage = `url('/creative-fills/${next}.webp')`
+    const incoming = layers[1 - activeFill.current]
+    incoming.style.backgroundImage = `url('/creative-fills/${next}.webp')`
+    incoming.classList.add('fillActive')
+    layers[activeFill.current].classList.remove('fillActive')
+    activeFill.current = 1 - activeFill.current
   }
 
   const handleCreativeHover = () => {
@@ -95,6 +105,11 @@ function Details() {
       }
     })
 
+    // Keep the photos cycling on their own — a gentle crossfade every few
+    // seconds. Honour reduced-motion by holding a single still photo.
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const rotation = reduce ? null : setInterval(pickRandomFill, 3200)
+
     let wasShowing = document.body.classList.contains('showCreativeFill')
     const observer = new MutationObserver(() => {
       const isShowing = document.body.classList.contains('showCreativeFill')
@@ -113,6 +128,7 @@ function Details() {
     document.addEventListener('visibilitychange', release)
 
     return () => {
+      if (rotation) clearInterval(rotation)
       observer.disconnect()
       window.removeEventListener('mouseup', release)
       window.removeEventListener('touchend', release)
@@ -139,7 +155,8 @@ function Details() {
           onContextMenu={(e) => e.preventDefault()}
         >
           <span className="creativeWordBase">Creative</span>
-          <span className="creativeWordFill" ref={fillRef} aria-hidden="true">Creative</span>
+          <span className="creativeWordFill" ref={fillA} aria-hidden="true">Creative</span>
+          <span className="creativeWordFill" ref={fillB} aria-hidden="true">Creative</span>
         </span>
         {' '}
         <span className="headingWord" {...headingHandlers}>Developer</span>
