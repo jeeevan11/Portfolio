@@ -38,22 +38,32 @@
 .rotWord{
     display: inline-grid;
     align-items: baseline;
-    color: var(--highlight);
-    font-weight: 700;
-    /* Keep the taller Devanagari/Kannada/Gurmukhi spellings from inflating the
-       line's vertical rhythm. */
+    /* Match the surrounding line exactly (size + weight) — the global * rule
+       would otherwise blow these spans up to the display size. */
+    font: inherit;
     line-height: 1;
+    /* The whole word fades out and back in around each spelling swap. */
+    transition: opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .rotWord > .rotWordItem{
     grid-area: 1 / 1;
+    font: inherit;
     opacity: 0;
     white-space: nowrap;
-    transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* Instant — the swap is hidden behind the word's own fade, so the two scripts
+   never cross-fade over each other. */
 .rotWord > .rotWordItem.on{
     opacity: 1;
+}
+
+/* Only the place name carries the accent; the trailing ", India." / "." stays
+   the cream of the surrounding text. */
+.rotCity{
+    font: inherit; /* else the global * rule blows it up to display size */
+    color: var(--highlight);
 }
 
 @media (max-width: 768px) {
