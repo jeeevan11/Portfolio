@@ -15,7 +15,8 @@
 }
 
 .expCompany{
-    font-size: clamp(28px, 4.4vw, 64px) !important;
+    /* Match the Selected work project names (the global display size) */
+    font-size: clamp(30px, 6vw, 92px) !important;
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.02;

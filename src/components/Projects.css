@@ -19,10 +19,16 @@
 }
 
 .projName{
-    /* Match the Experience company-name heading so the two sections align */
-    font-size: clamp(28px, 4.4vw, 64px) !important;
     line-height: 1.04;
     white-space: nowrap;
+}
+
+/* The actual name text (link or static span) must carry the size — the global
+   * rule sets font-size on these directly, so a size on .projName alone is
+   overridden. This is the display size shared with Experience .expCompany. */
+.projName a,
+.projName .projNameStatic{
+    font-size: clamp(30px, 6vw, 92px) !important;
 }
 
 /* Projects without a public link — plain, non-interactive text */

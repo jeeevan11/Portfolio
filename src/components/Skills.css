@@ -16,8 +16,9 @@
 }
 
 .skillLabel{
-    flex: 0 0 auto;
-    min-width: 9em;
+    /* Fixed-width column so every row's items start at the same x (the longest
+       label, "Frontend & apps", fits in 13em). */
+    flex: 0 0 13em;
     font-size: clamp(11px, 1vw, 14px) !important;
     font-weight: 600;
     letter-spacing: 0.14em;
