@@ -636,9 +636,12 @@ body.creativePeek .profileStamp { pointer-events: none; }
 
 .stampLayer.stampLayerActive { opacity: 1; }
 
-/* Visibility is scroll-driven in App.jsx (updateStampVisibility): the stamp
-   stays hidden over the hero — where the name sits — and fades in only as the
-   body content scrolls up, so it never crowds the wordmark. */
+/* Fades in once the name parks at the corner (matches toggle timing) */
+body.started .profileStamp {
+  animation: stampIn 1.4s cubic-bezier(0.25, 0, 0, 1) 5s forwards;
+}
+
+@keyframes stampIn { to { opacity: 1; } }
 
 /* Recede with the rest of the world during focus mode / creative peek */
 body.focusMode .profileStamp,

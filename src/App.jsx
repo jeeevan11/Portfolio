@@ -789,66 +789,11 @@ function App() {
         const pre = new Image(); pre.src = el.getAttribute('data-stamp')
       })
 
-      // ── Stamp visibility — hidden over the hero (where the name sits), fades
-      // in as the body content scrolls up so it never crowds the wordmark.
-      // Scroll-driven, so it tracks both directions (gone again at the top). ──
-      const stampEl = document.querySelector('.profileStamp')
-      const updateStampVisibility = () => {
-        if (!stampEl) return
-        const vh = window.innerHeight
-        const y = window.scrollY || window.pageYOffset || 0
-        const start = vh * 0.5   // still fully hidden across the hero
-        const end = vh * 0.95    // fully shown once a screenful has scrolled by
-        const v = Math.max(0, Math.min(1, (y - start) / (end - start)))
-        stampEl.style.opacity = String(v)
-      }
-
-      const onScrollFx = () => { updateSpotlight(); updateStamp(); updateStampVisibility() }
+      const onScrollFx = () => { updateSpotlight(); updateStamp() }
       lenis.on('scroll', onScrollFx)
       window.addEventListener('resize', onScrollFx)
       onScrollFx()                       // set initial brightness + stamp now
       requestAnimationFrame(onScrollFx)  // and again once laid out
-
-      // ── Idle: after a pause, rotate through the aesthetic photos ──
-      const AESTHETIC = [
-        '/aesthetic/me-2.jpg', '/aesthetic/a1.jpg', '/aesthetic/a2.jpg',
-        '/aesthetic/a3.jpg', '/aesthetic/a4.jpg', '/aesthetic/a5.jpg', '/aesthetic/a6.jpg',
-      ]
-      // These only appear after a 5s idle pause — preload them off the
-      // critical path so they don't compete with first paint or the work
-      // thumbnails. They're warm well before the idle rotation begins.
-      const preloadAesthetic = () => {
-        AESTHETIC.forEach((s) => { const pre = new Image(); pre.src = s })
-      }
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(preloadAesthetic, { timeout: 4000 })
-      } else {
-        setTimeout(preloadAesthetic, 2000)
-      }
-      let idleTimer = null
-      let rotateTimer = null
-      let idleIndex = 0
-      let idleActive = false
-      const enterIdle = () => {
-        if (idleActive || !stampLayers.length) return
-        idleActive = true
-        const tick = () => { setStamp(AESTHETIC[idleIndex % AESTHETIC.length]); idleIndex++ }
-        tick()
-        rotateTimer = setInterval(tick, 3400)
-      }
-      const exitIdle = () => {
-        if (rotateTimer) { clearInterval(rotateTimer); rotateTimer = null }
-        if (idleActive) { idleActive = false; updateStamp() } // restore the scroll-position image
-      }
-      const bumpIdle = () => {
-        exitIdle()
-        if (idleTimer) clearTimeout(idleTimer)
-        idleTimer = setTimeout(enterIdle, 5000)
-      }
-      window.addEventListener('mousemove', bumpIdle, { passive: true })
-      window.addEventListener('pointerdown', bumpIdle, { passive: true })
-      lenis.on('scroll', bumpIdle)
-      bumpIdle()
 
       // ── Touch affordance: light a link's underline while a finger is over
       // it, even mid-scroll. Touch devices have no :hover, so links read as
@@ -938,15 +883,11 @@ function App() {
         cleanupClicks()
         rollTls.forEach(tl => tl.kill())
         window.removeEventListener('resize', onScrollFx)
-        window.removeEventListener('mousemove', bumpIdle)
-        window.removeEventListener('pointerdown', bumpIdle)
         window.removeEventListener('touchstart', onTouchTrack)
         window.removeEventListener('touchmove', onTouchTrack)
         window.removeEventListener('touchend', clearTouchLit)
         window.removeEventListener('touchcancel', clearTouchLit)
         clearTouchLit()
-        if (idleTimer) clearTimeout(idleTimer)
-        if (rotateTimer) clearInterval(rotateTimer)
         gsap.ticker.remove(rafFn)
         lenis.destroy()
         ScrollTrigger.getAll().forEach((t) => t.kill())
