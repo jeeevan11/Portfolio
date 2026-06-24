@@ -45,7 +45,7 @@ const projectsData = [
     placeholder: true,
     tag: 'In progress',
     desc: 'A doctor says one line. Fifteen seconds later the patient is holding a clean prescription on WhatsApp. It can never invent a medicine or a dose.',
-    image: '/work/nuska.jpg',
+    image: '/work/nuska.jpg?v=2',
   },
   {
     key: 5,
