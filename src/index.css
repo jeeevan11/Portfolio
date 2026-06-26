@@ -616,7 +616,9 @@ body.focusMode #details p:nth-child(2) {
   user-select: none;
   transition:
     transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.7s cubic-bezier(0.25, 0, 0, 1);
+    /* Slow bloom so the portrait fades in with the body content (App.jsx fades
+       #content over 2.0s the moment the intro veil lifts), not ahead of it. */
+    opacity 1.4s cubic-bezier(0.25, 0, 0, 1);
 }
 
 .profileStamp:hover { transform: translateY(-50%) rotate(-3deg) scale(1.025); }

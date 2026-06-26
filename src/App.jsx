@@ -714,17 +714,21 @@ function App() {
         document.body.classList.remove('intro')
       }, null, '>')
 
-      // 4. Page breathes open. Phone: sequential — content only after JC settles.
-      // liquid ease: viscous fade, like ink blooming across paper.
+      // 4. Page breathes open — content fades from 0 the moment the intro veil
+      // lifts (the tl.call above removed body.intro), so it blooms in together
+      // with the photo + cue (which reveal on body:not(.intro)) instead of
+      // snapping to a partial opacity. Starting at '>' (right after the veil
+      // lifts) is what avoids the pop — earlier, body.intro held it at 0 and it
+      // jumped when released. liquid ease: a viscous fade, like ink blooming.
       tl.to(
         '#content',
         {
           opacity: 1,
-          duration: 2.6,
+          duration: 2.0,
           ease: 'liquid',
           onStart: () => lenis.start(),
         },
-        isMobile ? '+=0.2' : '-=2.0'
+        '>'
       )
 
       // 5. Every content line reveals through one scroll "spotlight": dim until
