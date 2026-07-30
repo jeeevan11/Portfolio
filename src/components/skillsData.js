@@ -13,5 +13,6 @@ export const skillGroups = [
 
 export const recognition = [
   { key: 'meta', title: 'Meta × PyTorch Hackathon', detail: 'Top 100 of 35,000+ teams' },
+  { key: 'deepmind', title: 'Google DeepMind Bengaluru Hackathon', detail: 'Top 20 Finalist' },
   { key: 'iqoo', title: 'iQOO Hackathon, Bengaluru', detail: 'Special Honour' },
 ]

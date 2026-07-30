@@ -20,20 +20,12 @@ function Connect() {
     }
   }
 
-  const openResume = () => window.dispatchEvent(new Event('jc:open-resume'))
-
   return (
     <div id="connectDiv">
       {connectData.map((link) => {
         const isExternal = link.link && /^https?:/.test(link.link)
         let inner
-        if (link.resume) {
-          inner = (
-            <button type="button" className="connectAction" onClick={openResume}>
-              {link.name}
-            </button>
-          )
-        } else if (link.copy) {
+        if (link.copy) {
           inner = (
             <button
               type="button"

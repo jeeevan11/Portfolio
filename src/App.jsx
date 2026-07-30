@@ -7,7 +7,6 @@ import Name from './components/Name'
 import Scrollable from './components/Scrollable'
 import Footer from './components/Footer'
 import Grain from './components/Grain'
-import ResumeViewer from './components/ResumeViewer'
 import quotes from './components/quotesData'
 
 let _audioCtx = null
@@ -1020,19 +1019,7 @@ function App() {
       {/* Portrait stamp — pinned left on desktop; the image crossfades to match
           whichever section is level with it. Two layers so the swap dissolves. */}
       {!IS_MOBILE && (
-        <div
-          className="profileStamp"
-          role="button"
-          tabIndex={0}
-          aria-label="View résumé"
-          onClick={() => window.dispatchEvent(new Event('jc:open-resume'))}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              window.dispatchEvent(new Event('jc:open-resume'))
-            }
-          }}
-        >
+        <div className="profileStamp" role="presentation" aria-hidden="true">
           <img
             className="stampLayer stampLayerActive"
             src="/jatin.jpg"
@@ -1086,7 +1073,6 @@ function App() {
       </button>
       )}
       <Name onNameClick={handleNameClick} />
-      <ResumeViewer />
       <main id="content">
         <Scrollable />
         <Footer quote={quotes[quoteIndex]} onLineHover={shuffleQuote} />

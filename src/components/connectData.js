@@ -1,14 +1,8 @@
 // Socials + contact shown in the Connect section. `image` is the brand logo
-// the stamp flips to when that link is level. `resume: true` opens the résumé
-// viewer; `copy` holds an address that's copied to the clipboard on click.
+// the stamp flips to when that link is level. `copy` holds an address that's
+// copied to the clipboard on click.
 
 const connectData = [
-  {
-    key: 0,
-    name: 'Résumé',
-    resume: true,
-    image: '/logos/resume.svg',
-  },
   {
     key: 1,
     name: 'Email',

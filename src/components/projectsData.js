@@ -31,6 +31,24 @@ const projectsData = [
   },
   {
     key: 3,
+    name: 'SUTRA',
+    link: '#',
+    placeholder: true,
+    tag: "FinSpark'26 Hackathon · Bank of Maharashtra",
+    desc: 'Thirty five security alerts a shift, and a team drowning in them. SUTRA fuses telemetry with core banking into one graph and cuts that down to three, zero false positives, full recall.',
+    image: '/work/recognition.jpg',
+  },
+  {
+    key: 4,
+    name: 'Netra',
+    link: '#',
+    placeholder: true,
+    tag: 'Google DeepMind Hackathon · Top 20 Finalist',
+    desc: 'Most tools for the blind narrate everything and drown out the world. Netra only speaks when it actually helps: a step before it happens, a bus arriving, a face it knows. Six languages, fully offline.',
+    image: '/work/netra.jpg',
+  },
+  {
+    key: 5,
     name: 'Drishti',
     link: '#',
     placeholder: true,
@@ -39,7 +57,7 @@ const projectsData = [
     image: '/work/drishti.jpg',
   },
   {
-    key: 4,
+    key: 6,
     name: 'Nuska',
     link: '#',
     placeholder: true,
@@ -48,7 +66,7 @@ const projectsData = [
     image: '/work/nuska.jpg?v=2',
   },
   {
-    key: 5,
+    key: 7,
     name: 'Mac Tools',
     link: '#',
     placeholder: true,
@@ -57,7 +75,7 @@ const projectsData = [
     image: '/work/mac-tools.jpg',
   },
   {
-    key: 6,
+    key: 8,
     name: 'folio25',
     link: 'https://github.com/jeeevan11',
     tag: 'React · GSAP · WebGL',
