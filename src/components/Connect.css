@@ -17,7 +17,7 @@
     transition: color 0.7s cubic-bezier(0.25, 0, 0, 1);
 }
 
-/* The Email trigger is a button styled to read like the links */
+/* The Résumé / Email triggers are buttons styled to read like the links */
 #connectDiv .connectAction{
     margin: 0;
     padding: 0;
