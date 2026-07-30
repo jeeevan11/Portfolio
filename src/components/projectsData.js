@@ -8,7 +8,7 @@ const projectsData = [
     key: 0,
     name: 'Steward',
     link: 'https://github.com/jeeevan11/steward-app',
-    tag: 'Live · ~74k LOC Python · 1,061 tests',
+    tag: 'Live · ~43.7k LOC Python · 1,023 tests',
     desc: 'My phone never stops buzzing. Steward reads every email and WhatsApp, clears the noise, and wakes me only for the two that matter. 4,900 sorted, 95 ever sent.',
     featured: true,
     image: '/work/steward.jpg?v=2',
