@@ -10,7 +10,7 @@ const experienceData = [
     dates: 'Jan 2026 to Present',
     featured: true,
     image: '/work/social-gravity.jpg?v=2',
-    desc: 'An AI version of a real person you can call and talk to out loud. I own the twin that lives on any website. The first hello took five seconds. Now it lands in under one. Two weeks in: 2,500 conversations, 73,000 minutes.',
+    desc: 'An AI version of a real person you can call and talk to out loud. I co-built the SDK that puts the twin on any website. The first hello took five seconds. Now it lands in under one. Two weeks in: 2,500 conversations, 73,000 minutes.',
   },
   {
     key: 1,
