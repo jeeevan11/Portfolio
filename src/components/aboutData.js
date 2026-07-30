@@ -11,7 +11,7 @@ export const aboutMe = [
 
 export const beliefs = [
   'Build the whole thing. Idea to ship, front to back.',
-  'Make your own tools, and you will never wait on anyone.',
+  'Make your own tools. Never wait on anyone.',
   'When you are not sure, do not guess.',
   'Lead with the person on the other end. The proof comes after.',
   'Build long-term things with long-term people.',

@@ -9,7 +9,7 @@ const projectsData = [
     name: 'Steward',
     link: 'https://github.com/jeeevan11/steward-app',
     tag: 'Live · ~43.7k LOC Python · 1,023 tests',
-    desc: 'My phone never stops buzzing. Steward reads every email and WhatsApp, clears the noise, and wakes me only for the two that matter. 4,900 sorted, 95 ever sent.',
+    desc: 'My phone never stops buzzing. Steward reads every email and WhatsApp and wakes me only for the two that matter. 4,900 sorted, 95 ever sent.',
     featured: true,
     image: '/work/steward.jpg?v=2',
   },
@@ -18,7 +18,7 @@ const projectsData = [
     name: 'The Referee',
     link: 'https://huggingface.co/spaces/testingaccc/conflict-arbitration-env',
     tag: 'Meta × PyTorch · Top 100 of 35,000',
-    desc: 'Two AI agents write code at once and quietly disagree, until it all breaks at the merge. This catches the fight before it starts. 87.5% right, against 33% for a coin flip.',
+    desc: 'Two AI agents write code and quietly disagree until the merge breaks. This catches the fight early. 87.5% right, against 33% for a coin flip.',
     image: '/work/the-referee.jpg?v=2',
   },
   {
@@ -26,7 +26,7 @@ const projectsData = [
     name: 'Hospital Helper',
     link: 'https://huggingface.co/spaces/testingaccc/hospital-ed',
     tag: 'Meta × PyTorch · Top 100 of 35,000',
-    desc: 'One open bed. Three people who need it. An AI that keeps its head and chooses, beating the rules a human wrote by hand, 78.85 to 68.43.',
+    desc: 'One open bed. Three people who need it. An AI that chooses, beating hand-written rules 78.85 to 68.43.',
     image: '/work/hospital-helper.jpg?v=2',
   },
   {
@@ -35,7 +35,7 @@ const projectsData = [
     link: '#',
     placeholder: true,
     tag: "FinSpark'26 Hackathon · Bank of Maharashtra",
-    desc: 'Thirty five security alerts a shift, and a team drowning in them. SUTRA fuses telemetry with core banking into one graph and cuts that down to three, zero false positives, full recall.',
+    desc: 'Thirty five security alerts a shift, and a team drowning. SUTRA fuses telemetry with core banking and cuts it to three. Zero false positives, full recall.',
     image: '/work/recognition.jpg',
   },
   {
@@ -44,7 +44,7 @@ const projectsData = [
     link: '#',
     placeholder: true,
     tag: 'Google DeepMind Hackathon · Top 20 Finalist',
-    desc: 'Most tools for the blind narrate everything and drown out the world. Netra only speaks when it actually helps: a step before it happens, a bus arriving, a face it knows. Six languages, fully offline.',
+    desc: 'Most tools for the blind narrate everything and drown out the world. Netra speaks only when it helps. A step, a bus, a face it knows. Six languages, fully offline.',
     image: '/work/netra.jpg',
   },
   {
@@ -53,7 +53,7 @@ const projectsData = [
     link: '#',
     placeholder: true,
     tag: 'iQOO Hackathon · Special Honour',
-    desc: 'A blind hand holds a banknote it cannot read. This says the number out loud, offline, in three languages. And when it is not sure, it stays silent rather than risk a wrong one.',
+    desc: 'A blind hand holds a banknote it cannot read. This says the number out loud, offline, in three languages. When it is not sure, it stays silent.',
     image: '/work/drishti.jpg',
   },
   {
@@ -71,7 +71,7 @@ const projectsData = [
     link: '#',
     placeholder: true,
     tag: 'Swift · AppKit · menu-bar',
-    desc: 'Little Swift apps I built for myself and never closed. A menu-bar meter that watches my Claude API spend tick up on a live sparkline, and WorldClock, a pure-AppKit clock that sips 7 to 10 MB.',
+    desc: 'Little Swift apps I built for myself and never closed. A menu-bar meter for my Claude API spend, and WorldClock, a pure-AppKit clock that sips 7 to 10 MB.',
     image: '/work/mac-tools.jpg',
   },
   {

@@ -10,7 +10,7 @@ const experienceData = [
     dates: 'Jan 2026 to Present',
     featured: true,
     image: '/work/social-gravity.jpg?v=2',
-    desc: 'Call an AI version of a real person and talk to it out loud, like ringing a friend. I own the twin that lives on any website, and the feel of the whole thing. The first hello used to take five seconds, long enough to feel ignored. Now it lands in under one, and the first two weeks ran 2,500 conversations and 73,000 minutes. Next is the voice-first link-in-bio.',
+    desc: 'An AI version of a real person you can call and talk to out loud. I own the twin that lives on any website. The first hello took five seconds. Now it lands in under one. Two weeks in: 2,500 conversations, 73,000 minutes.',
   },
   {
     key: 1,
@@ -19,7 +19,7 @@ const experienceData = [
     link: 'https://findable-app-beige.vercel.app/',
     dates: 'Apr 2026 to Jun 2026',
     image: '/work/findable.jpg?v=2',
-    desc: 'Most businesses are invisible to ChatGPT. My job is to make them the answer it gives. For a German seed shop turning over €50K a month, I found 49 fixes and drew the whole way back: 74,500 visits and 34,000 clicks off Google in three months.',
+    desc: 'Most businesses are invisible to ChatGPT. I make them the answer it gives. A German seed shop doing €50K a month: 49 fixes, then 74,500 visits and 34,000 Google clicks in three months.',
   },
   {
     key: 2,
@@ -27,7 +27,7 @@ const experienceData = [
     company: 'UpSale',
     dates: 'Jul 2024 to Mar 2025',
     image: '/work/upsale.jpg?v=2',
-    desc: 'I started behind the editing desk and walked out owning the growth. Restaurants nobody noticed, suddenly everywhere: 10,000 followers each, 50,000 across the roster, and over 100,000 views.',
+    desc: 'Started at the editing desk, left owning the growth. Restaurants nobody noticed, suddenly everywhere. 10,000 followers each, 50,000 total, 100,000 views.',
   },
 ]
 

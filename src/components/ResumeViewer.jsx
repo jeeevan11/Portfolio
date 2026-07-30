@@ -39,7 +39,7 @@ export default function ResumeViewer() {
   const share = async () => {
     const url = window.location.origin + RESUME_URL
     if (navigator.share) {
-      try { await navigator.share({ title: 'Jatin Chhanwal — Résumé', url }) } catch { /* cancelled */ }
+      try { await navigator.share({ title: 'Jatin Chhanwal, Résumé', url }) } catch { /* cancelled */ }
     } else {
       try {
         await navigator.clipboard.writeText(url)
