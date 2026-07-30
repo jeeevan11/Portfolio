@@ -4,14 +4,10 @@
 export const aboutMe = [
   // "Born in Punjab" + "Based in Bengaluru, India" are rendered in About.jsx
   // with the rotating multilingual word, so they're not listed here.
-  'Self-taught. Nobody handed me any of it.',
   'Founding member and engineer at Social Gravity AI.',
-  'I move fast. A whole app in 30 hours, a prescription in 15 seconds.',
 ]
 
 export const beliefs = [
-  'Build the whole thing. Idea to ship, front to back.',
-  'Make your own tools. Never wait on anyone.',
   'When you are not sure, do not guess.',
   'Lead with the person on the other end. The proof comes after.',
   'Build long-term things with long-term people.',
